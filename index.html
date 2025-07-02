@@ -1,0 +1,2103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+    <meta charset="UTF-8">
+    <title>Sistema Integrado de Gestión de Recetas y Stock</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slide-up {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.5s ease-out forwards;
+        }
+        .animate-slide-up {
+          animation: slide-up 0.6s ease-out forwards;
+        }
+        </style>
+        
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-white to-blue-100 min-h-screen font-sans text-sm sm:text-base">
+    <header class="bg-gradient-to-r from-blue-800 to-cyan-500 text-white px-4 sm:px-6 md:px-8 py-5 sm:py-6 md:py-7 rounded-b-2xl sm:rounded-b-3xl shadow-lg flex flex-col sm:flex-row items-center gap-3 sm:gap-5 justify-between">
+        <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-5 text-center sm:text-left">
+            <i class="fa-solid fa-prescription-bottle-medical text-4xl sm:text-5xl drop-shadow-lg"></i>
+            <div>
+                <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-1 tracking-tight">Sistema Integrado de Gestión</h1>
+                <small class="opacity-90 text-sm sm:text-base">Demo funcional - Datos simulados</small>
+            </div>
+        </div>
+        <div class="flex flex-wrap justify-center gap-1 sm:gap-2 bg-white/20 rounded-xl px-2 sm:px-4 py-1 sm:py-2 shadow text-blue-900 font-semibold w-full sm:w-auto">
+            <div class="flex items-center gap-1 sm:gap-2">
+                <i class="fa-solid fa-user text-blue-700"></i>
+                <span id="userType" class="text-sm sm:text-base mr-1 sm:mr-2">Paciente</span>
+            </div>
+            <div class="flex flex-wrap justify-center gap-1">
+                <button onclick="setUser('Paciente')" class="text-xs sm:text-sm px-1.5 sm:px-2 py-0.5 sm:py-1 rounded hover:bg-blue-100 transition transform hover:scale-105 duration-300">Paciente</button>
+                <button onclick="setUser('Médico')" class="text-xs sm:text-sm px-1.5 sm:px-2 py-0.5 sm:py-1 rounded hover:bg-blue-100 transition transform hover:scale-105 duration-300">Médico</button>
+                <button onclick="setUser('Administrador')" class="text-xs sm:text-sm px-1.5 sm:px-2 py-0.5 sm:py-1 rounded hover:bg-blue-100 transition transform hover:scale-105 duration-300">Admin</button>
+                <button onclick="setUser('Auditador')" class="text-xs sm:text-sm px-1.5 sm:px-2 py-0.5 sm:py-1 rounded hover:bg-blue-100 transition transform hover:scale-105 duration-300">Audit</button>
+            </div>
+        </div>
+    </header>
+    <nav id="mainMenu" class="bg-white/80 backdrop-blur-md shadow-lg flex flex-wrap gap-2 sm:gap-4 px-3 sm:px-6 py-2 sm:py-3 sticky top-0 z-10 rounded-b-xl justify-center items-center overflow-x-auto"></nav>
+    <main class="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 md:py-8">
+        <!-- Turnero -->
+        <section id="turnero" class="section hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-3xl font-extrabold text-blue-800 flex items-center gap-3">
+                    <i class="fa-solid fa-calendar-check text-blue-500"></i>
+                    Turnero
+                </h2>
+                <button id="btnCalendario" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl shadow font-semibold flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-days"></i> Ver Calendario
+                </button>
+            </div>
+            <div id="turneroContenido" class="bg-white rounded-xl shadow p-2 sm:p-4 overflow-hidden"></div>
+            <!-- Modal calendario -->
+            <div id="modalCalendario" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center">
+                <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-2xl relative">
+                    <button onclick="cerrarCalendario()" class="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-xl">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <h3 class="text-xl font-bold text-blue-700 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-days text-blue-500"></i> Calendario de Turnos
+                    </h3>
+                    <div id="calendarioTurnos"></div>
+                </div>
+            </div>
+            <script>
+            // Renderiza un calendario simple con los turnos marcados según el usuario
+            function renderCalendarioTurnos() {
+                const cont = document.getElementById('calendarioTurnos');
+                if (!cont) return;
+                // Obtener mes/año actual
+                const hoy = new Date();
+                let mes = hoy.getMonth();
+                let anio = hoy.getFullYear();
+
+                // Filtrar turnos según el usuario
+                let turnosFiltrados = [];
+                if (currentUser === "Paciente") {
+                    turnosFiltrados = turnosSimulados.filter(t => t.paciente === "Juan Pérez");
+                } else if (currentUser === "Médico") {
+                    turnosFiltrados = turnosSimulados.filter(t => t.medico === medicoActual);
+                } else {
+                    turnosFiltrados = turnosSimulados;
+                }
+
+                // Buscar el primer turno para centrar el calendario en ese mes si existe
+                if (turnosFiltrados.length > 0) {
+                    const fechas = turnosFiltrados.map(t => t.fecha);
+                    fechas.sort();
+                    const primera = fechas[0].split("-");
+                    anio = parseInt(primera[0], 10);
+                    mes = parseInt(primera[1], 10) - 1;
+                }
+
+                // Obtener turnos por fecha
+                const turnosPorFecha = {};
+                turnosFiltrados.forEach(t => {
+                    if (!turnosPorFecha[t.fecha]) turnosPorFecha[t.fecha] = [];
+                    turnosPorFecha[t.fecha].push(t);
+                });
+
+                // Generar calendario
+                function dibujarCalendario(mes, anio) {
+                    const primerDia = new Date(anio, mes, 1);
+                    const ultimoDia = new Date(anio, mes + 1, 0);
+                    const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+                    let html = `
+                        <div class="flex justify-between items-center mb-2">
+                            <button class="px-2 py-1 rounded hover:bg-blue-100" id="calPrev">&lt;</button>
+                            <span class="font-bold text-blue-700">${primerDia.toLocaleString('es-ES', { month: 'long', year: 'numeric' })}</span>
+                            <button class="px-2 py-1 rounded hover:bg-blue-100" id="calNext">&gt;</button>
+                        </div>
+                        <table class="w-full text-center border-collapse">
+                            <thead>
+                                <tr>${diasSemana.map(d => `<th class="py-1 text-xs text-gray-500">${d}</th>`).join('')}</tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    let dia = 1;
+                    for (let f = 0; f < 6; f++) {
+                        html += "<tr>";
+                        for (let d = 0; d < 7; d++) {
+                            if (f === 0 && d < primerDia.getDay()) {
+                                html += `<td class="py-2 px-1"></td>`;
+                            } else if (dia > ultimoDia.getDate()) {
+                                html += `<td class="py-2 px-1"></td>`;
+                            } else {
+                                const fechaStr = `${anio}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+                                const turnos = turnosPorFecha[fechaStr] || [];
+                                html += `<td class="py-2 px-1 align-top">
+                                    <div class="w-8 h-8 mx-auto rounded-full ${turnos.length ? 'bg-blue-100 font-bold text-blue-700 border border-blue-400' : ''}">${dia}</div>
+                                    ${turnos.length ? `<div class="mt-1 flex flex-col gap-1">${turnos.map(t => `
+                                        <div class="text-xs bg-blue-200 text-blue-800 rounded px-1 mb-0.5">${t.hora} - ${t.paciente}</div>
+                                    `).join('')}</div>` : ''}
+                                </td>`;
+                                dia++;
+                            }
+                        }
+                        html += "</tr>";
+                        if (dia > ultimoDia.getDate()) break;
+                    }
+                    html += "</tbody></table>";
+                    cont.innerHTML = html;
+
+                    // Navegación de mes
+                    document.getElementById('calPrev').onclick = () => {
+                        mes--;
+                        if (mes < 0) { mes = 11; anio--; }
+                        dibujarCalendario(mes, anio);
+                    };
+                    document.getElementById('calNext').onclick = () => {
+                        mes++;
+                        if (mes > 11) { mes = 0; anio++; }
+                        dibujarCalendario(mes, anio);
+                    };
+                }
+                dibujarCalendario(mes, anio);
+            }
+
+            // Mostrar calendario al abrir modal
+            const modalCalendario = document.getElementById('modalCalendario');
+            if (modalCalendario) {
+                const observer = new MutationObserver(() => {
+                    if (!modalCalendario.classList.contains('hidden')) {
+                        renderCalendarioTurnos();
+                    }
+                });
+                observer.observe(modalCalendario, { attributes: true, attributeFilter: ['class'] });
+            }
+            </script>
+        </section>
+        <!-- Portal Paciente -->
+        <section id="portal" class="section hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-3xl font-extrabold text-blue-800 flex items-center gap-3">
+                    <i class="fa-solid fa-address-card text-cyan-500"></i>
+                    Portal del Paciente
+                </h2>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg p-8 flex flex-col md:flex-row gap-8">
+                <div class="flex-1">
+                    <h3 class="font-bold text-lg mb-2">Datos personales</h3>
+                    <div class="mb-2"><b>Nombre:</b> Juan Pérez</div>
+                    <div class="mb-2"><b>DNI:</b> 12345678</div>
+                    <div class="mb-2"><b>Obra Social:</b> SaludPlus</div>
+                </div>
+                <div class="""flex-1"></div>
+                    <h3 class="""font-bold text-lg mb-2">Turnos próximos</h3>
+                    <div id="""proximoTurno"></div>
+                </div>
+            </div>
+        </section>
+        <!-- Notificaciones -->
+        <section id="notificaciones" class="section hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-3xl font-extrabold text-blue-800 flex items-center gap-3">
+                    <i class="fa-solid fa-bell text-yellow-500"></i>
+                    Notificaciones
+                </h2>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg p-8">
+                <ul class="list-disc pl-6 text-gray-700 space-y-2">
+                    <li>Recordatorio: Retire su medicamento en farmacia.</li>
+                    <li>Su receta digital fue autorizada.</li>
+                    <li>Turno confirmado para el 2024-06-10 a las 08:00.</li>
+                </ul>
+            </div>
+        </section>
+        <!-- Atención Virtual (solo para Paciente) -->
+        <!-- Sección de atención virtual para pacientes -->
+        <section id="atencion-virtual" class="section hidden">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-blue-800 flex items-center gap-2 sm:gap-3">
+                    <i class="fa-solid fa-laptop-medical text-green-500 text-xl sm:text-2xl"></i>
+                    <span>Atención Virtual</span>
+                </h2>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden max-w-4xl mx-2 sm:mx-4 md:mx-auto">
+                <!-- Encabezado -->
+                <div class="bg-gradient-to-r from-blue-600 to-blue-800 p-6 text-white">
+                    <h3 class="text-xl sm:text-2xl font-bold flex items-center gap-2 sm:gap-3">
+                        <i class="fa-solid fa-stethoscope text-lg sm:text-xl"></i>
+                        <span class="text-lg sm:text-2xl">Consulta Médica Virtual</span>
+                    </h3>
+                    <p class="mt-2 text-blue-100">Acceda a atención médica profesional desde la comodidad de su hogar</p>
+                </div>
+                
+                <!-- Contenido principal -->
+                <div class="p-6">
+                    <!-- Estado de conexión -->
+                    <div class="flex items-center justify-between mb-6 p-4 bg-blue-50 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+                            <span class="font-medium text-gray-700">Sistema de atención en línea activo</span>
+                        </div>
+                        <span class="text-sm text-green-600 font-medium">Conectado</span>
+                    </div>
+                    
+                    <!-- Opciones de atención -->
+                    <div class="grid md:grid-cols-2 gap-6 mb-8">
+                        <!-- Videoconsulta -->
+                        <div class="border rounded-lg sm:rounded-xl p-4 sm:p-5 hover:shadow-md transition-shadow cursor-pointer text-center active:scale-[0.98]" onclick="iniciarConsulta('video')">
+                            <div class="bg-blue-100 w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                                <i class="fa-solid fa-video text-blue-600 text-xl sm:text-2xl"></i>
+                            </div>
+                            <h4 class="font-semibold text-base sm:text-lg text-gray-800 mb-1 sm:mb-2">Videoconsulta</h4>
+                            <p class="text-gray-600 text-xs sm:text-sm leading-tight sm:leading-normal">Consulte con un médico en tiempo real por videollamada</p>
+                            <button class="mt-3 sm:mt-4 bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium transition-colors active:bg-blue-800 text-sm sm:text-base">
+                                Iniciar videollamada
+                            </button>
+                        </div>
+                        
+                        <!-- Chat médico -->
+                        <div class="border rounded-lg sm:rounded-xl p-4 sm:p-5 hover:shadow-md transition-shadow cursor-pointer text-center active:scale-[0.98]" onclick="iniciarConsulta('chat')">
+                            <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fa-solid fa-comment-medical text-green-600 text-xl sm:text-2xl"></i>
+                            </div>
+                            <h4 class="font-semibold text-base sm:text-lg text-gray-800 mb-1 sm:mb-2">Chat con médico</h4>
+                            <p class="text-gray-600 text-xs sm:text-sm leading-tight sm:leading-normal">Hable con un profesional de la salud por mensajería instantánea</p>
+                            <button class="mt-3 sm:mt-4 bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium transition-colors active:bg-green-800 text-sm sm:text-base">
+                                Iniciar chat
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Información de emergencia -->
+                    <div class="bg-red-50 border-l-4 border-red-500 p-3 sm:p-4 rounded-r-lg mb-4 sm:mb-6">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <i class="fa-solid fa-triangle-exclamation text-red-500 text-xl mt-1"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h4 class="font-semibold text-red-800">¿Necesita ayuda inmediata?</h4>
+                                <p class="text-sm text-red-700 mt-1">
+                                    Si experimenta dolor en el pecho, dificultad para respirar, pérdida del conocimiento o cualquier otro síntoma grave, llame a emergencias de inmediato.
+                                </p>
+                                <a href="tel:107" class="inline-flex items-center mt-2 text-red-700 font-medium hover:underline">
+                                    <i class="fa-solid fa-phone-volume mr-2"></i>
+                                    Llamar al 107 (Emergencias)
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Especialidades disponibles -->
+                    <div class="mt-8">
+                        <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-user-doctor text-blue-600"></i>
+                            Especialidades disponibles
+                        </h4>
+                        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+                            <div class="border rounded-lg p-3 text-center hover:bg-blue-50 transition-colors cursor-pointer">
+                                <div class="bg-blue-100 w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                                    <i class="fa-solid fa-heart-pulse text-blue-600"></i>
+                                </div>
+                                <span class="text-sm font-medium text-gray-700">Cardiología</span>
+                            </div>
+                            <div class="border rounded-lg p-3 text-center hover:bg-blue-50 transition-colors cursor-pointer">
+                                <div class="bg-blue-100 w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                                    <i class="fa-solid fa-lungs text-blue-600"></i>
+                                </div>
+                                <span class="text-sm font-medium text-gray-700">Neumonología</span>
+                            </div>
+                            <div class="border rounded-lg p-3 text-center hover:bg-blue-50 transition-colors cursor-pointer">
+                                <div class="bg-blue-100 w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                                    <i class="fa-solid fa-brain text-blue-600"></i>
+                                </div>
+                                <span class="text-sm font-medium text-gray-700">Neurología</span>
+                            </div>
+                            <div class="border rounded-lg p-3 text-center hover:bg-blue-50 transition-colors cursor-pointer">
+                                <div class="bg-blue-100 w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                                    <i class="fa-solid fa-bone text-blue-600"></i>
+                                </div>
+                                <span class="text-sm font-medium text-gray-700">Traumatología</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pie de página -->
+                <div class="bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 border-t">
+                    <p class="text-[10px] xs:text-xs text-gray-500 text-center">
+                        <i class="fa-solid fa-lock mr-1"></i> 
+                        Su consulta es confidencial y está protegida por las leyes de privacidad médica.
+                    </p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Sección AMIE para médicos -->
+        <section id="amie" class="section hidden">
+            <div class="flex items-center justify-between mb-6">
+            <h2 class="text-3xl font-extrabold text-blue-800 flex items-center gap-3">
+                <i class="fa-solid fa-user-doctor text-green-500"></i>
+                AMIE - Asistente Médico Inteligente
+            </h2>
+            </div>
+        
+            <!-- Contenido para Paciente - Atención Médica Virtual -->
+            <div id="contenidoPacienteIA" class="hidden">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden max-w-4xl mx-2 sm:mx-4 md:mx-auto">
+                    <!-- Encabezado -->
+                    <div class="bg-gradient-to-r from-blue-600 to-blue-800 p-4 sm:p-6 text-white">
+                        <h3 class="text-xl sm:text-2xl font-bold flex items-center gap-2 sm:gap-3">
+                            <i class="fa-solid fa-stethoscope text-lg sm:text-xl"></i>
+                            <span class="text-lg sm:text-2xl">Consulta Médica Virtual</span>
+                        </h3>
+                        <p class="text-sm opacity-90 mt-1">Consulta con nuestros especialistas desde la comodidad de tu hogar</p>
+                    </div>
+                    
+                    <!-- Panel principal -->
+                    <div class="p-6">
+                        <!-- Estado de conexión -->
+                        <div class="flex items-center justify-between mb-6 p-4 bg-blue-50 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <div class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+                                <span class="font-medium text-gray-700">Sistema de atención en línea activo</span>
+                            </div>
+                            <span class="text-sm text-green-600 font-medium">Conectado</span>
+                        </div>
+                        
+                        <!-- Opciones de atención -->
+                        <div class="grid md:grid-cols-2 gap-6 mb-8">
+                            <!-- Videoconsulta -->
+                            <div class="border rounded-lg sm:rounded-xl p-4 sm:p-5 hover:shadow-md transition-shadow cursor-pointer text-center active:scale-[0.98]" onclick="iniciarConsulta('video')">
+                                <div class="bg-blue-100 w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                                    <i class="fa-solid fa-video text-blue-600 text-xl sm:text-2xl"></i>
+                                </div>
+                                <h4 class="font-semibold text-base sm:text-lg text-gray-800 mb-1 sm:mb-2">Videoconsulta</h4>
+                                <p class="text-gray-600 text-xs sm:text-sm leading-tight sm:leading-normal">Consulte con un médico en tiempo real por videollamada</p>
+                                <button class="mt-3 sm:mt-4 bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium transition-colors active:bg-blue-800 text-sm sm:text-base">
+                                    Iniciar videollamada
+                                </button>
+                            </div>
+                            
+                            <!-- Chat médico -->
+                            <div class="border rounded-lg sm:rounded-xl p-4 sm:p-5 hover:shadow-md transition-shadow cursor-pointer text-center active:scale-[0.98]" onclick="iniciarConsulta('chat')">
+                                <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fa-solid fa-comment-medical text-green-600 text-xl sm:text-2xl"></i>
+                                </div>
+                                <h4 class="font-semibold text-base sm:text-lg text-gray-800 mb-1 sm:mb-2">Chat con médico</h4>
+                                <p class="text-gray-600 text-xs sm:text-sm leading-tight sm:leading-normal">Hable con un profesional de la salud por mensajería instantánea</p>
+                                <button class="mt-3 sm:mt-4 bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium transition-colors active:bg-green-800 text-sm sm:text-base">
+                                    Iniciar chat
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Información de emergencia -->
+                        <div class="bg-red-50 border-l-4 border-red-500 p-3 sm:p-4 rounded-r-lg mb-4 sm:mb-6">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0">
+                                    <i class="fa-solid fa-triangle-exclamation text-red-500 text-xl mt-1"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <h4 class="font-semibold text-red-800">¿Necesita ayuda inmediata?</h4>
+                                    <p class="text-sm text-red-700 mt-1">
+                                        Si experimenta dolor en el pecho, dificultad para respirar, pérdida del conocimiento o cualquier otro síntoma grave, llame a emergencias de inmediato.
+                                    </p>
+                                    <a href="tel:107" class="inline-flex items-center mt-2 text-red-700 font-medium hover:underline">
+                                        <i class="fa-solid fa-phone-volume mr-2"></i>
+                                        Llamar al 107 (Emergencias)
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Especialidades disponibles -->
+                        <div class="mt-8">
+                            <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                <i class="fa-solid fa-user-doctor text-blue-600"></i>
+                                Especialidades disponibles
+                            </h4>
+                            <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+                                <div class="border rounded-lg p-3 text-center hover:bg-blue-50 transition-colors cursor-pointer">
+                                    <div class="bg-blue-100 w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                                        <i class="fa-solid fa-heart-pulse text-blue-600"></i>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-700">Cardiología</span>
+                                </div>
+                                <div class="border rounded-lg p-3 text-center hover:bg-blue-50 transition-colors cursor-pointer">
+                                    <div class="bg-blue-100 w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                                        <i class="fa-solid fa-lungs text-blue-600"></i>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-700">Neumonología</span>
+                                </div>
+                                <div class="border rounded-lg p-3 text-center hover:bg-blue-50 transition-colors cursor-pointer">
+                                    <div class="bg-blue-100 w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                                        <i class="fa-solid fa-brain text-blue-600"></i>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-700">Neurología</span>
+                                </div>
+                                <div class="border rounded-lg p-3 text-center hover:bg-blue-50 transition-colors cursor-pointer">
+                                    <div class="bg-blue-100 w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                                        <i class="fa-solid fa-bone text-blue-600"></i>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-700">Traumatología</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pie de página -->
+                    <div class="bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 border-t">
+                        <p class="text-[10px] xs:text-xs text-gray-500 text-center">
+                            <i class="fa-solid fa-lock mr-1"></i> 
+                            Su consulta es confidencial y está protegida por las leyes de privacidad médica.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Chat de asistencia (inicialmente oculto) -->
+                <div id="chatAsistencia" class="hidden fixed bottom-0 right-0 sm:right-4 sm:bottom-4 w-full sm:w-96 bg-white rounded-t-xl sm:rounded-xl shadow-xl flex flex-col" style="height: 80vh; max-height: 700px;">
+                    <!-- Encabezado del chat -->
+                    <div class="bg-blue-600 text-white p-3 rounded-t-xl flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full bg-blue-500 flex-shrink-0 flex items-center justify-center">
+                                <i class="fa-solid fa-user-md"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium">Asistente Virtual</div>
+                                <div class="text-xs opacity-80">En línea</div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="text-blue-200 hover:text-white">
+                                <i class="fa-solid fa-expand"></i>
+                            </button>
+                            <button onclick="document.getElementById('chatAsistencia').classList.add('hidden')" class="text-blue-200 hover:text-white">
+                                <i class="fa-solid fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Área de mensajes -->
+                    <div id="chatMensajes" class="flex-1 p-4 overflow-y-auto bg-gray-50">
+                        <!-- Mensajes se cargarán aquí -->
+                    </div>
+                    
+                    <!-- Entrada de mensaje -->
+                    <div class="border-t p-3 bg-white">
+                        <div class="flex gap-2">
+                            <input type="text" id="mensajeChat" 
+                                   class="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" 
+                                   placeholder="Escribe tu mensaje..." 
+                                   onkeypress="if(event.key === 'Enter') enviarMensajeChat()">
+                            <button onclick="enviarMensajeChat()" class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2 flex justify-between text-xs text-gray-500">
+                            <div class="flex gap-2">
+                                <button class="hover:text-blue-600"><i class="fa-solid fa-paperclip"></i></button>
+                                <button class="hover:text-blue-600"><i class="fa-solid fa-camera"></i></button>
+                            </div>
+                            <div>
+                                <span id="contadorCaracteres">0/500</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <script>
+                // Funciones para el chat de atención al paciente
+                
+                // Funciones para Google AMIE
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Inicializar eventos para AMIE
+                    const amieInput = document.getElementById('amieInput');
+                    if (amieInput) {
+                        // Manejar el ajuste de altura del textarea
+                        amieInput.addEventListener('input', function() {
+                            this.style.height = 'auto';
+                            this.style.height = (this.scrollHeight) + 'px';
+                            
+                            // Actualizar contador de caracteres
+                            const maxLength = 2000;
+                            const currentLength = this.value.length;
+                            const contador = document.getElementById('contadorCaracteresAMIE');
+                            
+                            if (contador) {
+                                contador.textContent = `${currentLength}/${maxLength}`;
+                                if (currentLength > maxLength) {
+                                    contador.classList.add('text-red-500');
+                                    this.value = this.value.substring(0, maxLength);
+                                } else {
+                                    contador.classList.remove('text-red-500');
+                                }
+                            }
+                        });
+                        
+                        // Permitir Shift+Enter para nueva línea, Enter para enviar
+                        amieInput.addEventListener('keydown', function(e) {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                enviarConsultaAMIE();
+                            }
+                        });
+                    }
+                    
+                    // Toggle sidebar
+                    const toggleSidebar = document.getElementById('toggleSidebar');
+                    const closeSidebar = document.getElementById('closeSidebar');
+                    const amieSidebar = document.getElementById('amieSidebar');
+                    
+                    if (toggleSidebar && amieSidebar) {
+                        toggleSidebar.addEventListener('click', function() {
+                            amieSidebar.classList.toggle('hidden');
+                        });
+                    }
+                    
+                    if (closeSidebar && amieSidebar) {
+                        closeSidebar.addEventListener('click', function() {
+                            amieSidebar.classList.add('hidden');
+                        });
+                    }
+                    
+                    // Cargar el nombre del médico si está disponible
+                    const nombreMedico = localStorage.getItem('medicoNombre') || 'Usuario';
+                    const elementoNombre = document.getElementById('nombreMedico');
+                    if (elementoNombre) {
+                        elementoNombre.textContent = nombreMedico;
+                    }
+                });
+                
+                // Función para sugerir consultas
+                function sugerirConsulta(texto, boton) {
+                    document.getElementById('amieInput').value = texto;
+                    document.getElementById('amieInput').focus();
+                    document.getElementById('amieInput').dispatchEvent(new Event('input'));
+                    
+                    // Resaltar el botón presionado
+                    const botones = document.querySelectorAll('.sugerencia-btn');
+                    botones.forEach(btn => {
+                        btn.classList.remove('bg-blue-100', 'border-blue-300');
+                    });
+                    if (boton) {
+                        boton.classList.add('bg-blue-100', 'border-blue-300');
+                    }
+                }
+                
+                // Función para enviar consulta a AMIE
+                function enviarConsultaAMIE() {
+                    const input = document.getElementById('amieInput');
+                    const chat = document.getElementById('amieChat');
+                    const texto = input.value.trim();
+                    
+                    if (!texto) return;
+                    
+                    // Agregar mensaje del usuario
+                    const userMsg = document.createElement('div');
+                    userMsg.className = 'flex justify-end mb-4';
+                    userMsg.innerHTML = `
+                        <div class="max-w-3xl">
+                            <div class="bg-blue-600 text-white p-3 rounded-xl rounded-br-none shadow-sm">
+                                <p>${texto}</p>
+                                <div class="text-right mt-1">
+                                    <span class="text-xs opacity-80">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    chat.appendChild(userMsg);
+                    
+                    // Limpiar el input
+                    input.value = '';
+                    input.style.height = 'auto';
+                    document.getElementById('contadorCaracteresAMIE').textContent = '0/2000';
+                    
+                    // Mostrar indicador de escritura
+                    const typingIndicator = document.createElement('div');
+                    typingIndicator.className = 'flex items-start mb-4';
+                    typingIndicator.id = 'amieTyping';
+                    typingIndicator.innerHTML = `
+                        <div class="w-8 h-8 rounded-full bg-blue-100 flex-shrink-0 flex items-center justify-center">
+                            <i class="fa-solid fa-robot text-blue-600"></i>
+                        </div>
+                        <div class="ml-3">
+                            <div class="bg-white p-3 rounded-xl rounded-tl-none shadow-sm border border-gray-200 w-24">
+                                <div class="flex space-x-1">
+                                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms"></div>
+                                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 200ms"></div>
+                                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 400ms"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    chat.appendChild(typingIndicator);
+                    chat.scrollTop = chat.scrollHeight;
+                    
+                    // Simular respuesta después de un retraso
+                    setTimeout(() => {
+                        // Eliminar indicador de escritura
+                        const typing = document.getElementById('amieTyping');
+                        if (typing) typing.remove();
+                        
+                        // Generar y mostrar respuesta
+                        const respuesta = generarRespuestaAMIE(texto);
+                        const botResponse = document.createElement('div');
+                        botResponse.className = 'flex items-start mb-4';
+                        botResponse.innerHTML = `
+                            <div class="w-8 h-8 rounded-full bg-blue-100 flex-shrink-0 flex items-center justify-center">
+                                <i class="fa-solid fa-robot text-blue-600"></i>
+                            </div>
+                            <div class="ml-3 max-w-3xl">
+                                <div class="bg-white p-4 rounded-xl rounded-tl-none shadow-sm border border-gray-200">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="font-medium text-sm text-gray-700">AMIE</span>
+                                        <span class="text-xs text-gray-400">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                    </div>
+                                    <div class="prose prose-sm max-w-none">
+                                        ${respuesta}
+                                    </div>
+                                    <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                                        <div class="flex items-center">
+                                            <i class="fa-solid fa-shield-halved text-green-500 mr-1"></i>
+                                            <span>Respuesta generada por IA</span>
+                                        </div>
+                                        <div class="flex space-x-2">
+                                            <button class="text-blue-600 hover:text-blue-800 flex items-center" title="Copiar respuesta">
+                                                <i class="fa-regular fa-copy mr-1"></i>
+                                                <span>Copiar</span>
+                                            </button>
+                                            <button class="text-blue-600 hover:text-blue-800 flex items-center" title="Reportar problema">
+                                                <i class="fa-regular fa-flag mr-1"></i>
+                                                <span>Reportar</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        chat.appendChild(botResponse);
+                        chat.scrollTop = chat.scrollHeight;
+                        
+                        // Agregar funcionalidad al botón de copiar
+                        const botonCopiar = botResponse.querySelector('button:first-of-type');
+                        if (botonCopiar) {
+                            botonCopiar.addEventListener('click', function() {
+                                navigator.clipboard.writeText(respuesta);
+                                const icono = botonCopiar.querySelector('i');
+                                const texto = botonCopiar.querySelector('span');
+                                const iconoOriginal = icono.className;
+                                const textoOriginal = texto.textContent;
+                                
+                                icono.className = 'fa-solid fa-check text-green-500 mr-1';
+                                texto.textContent = '¡Copiado!';
+                                
+                                setTimeout(() => {
+                                    icono.className = iconoOriginal;
+                                    texto.textContent = textoOriginal;
+                                }, 2000);
+                            });
+                        }
+                    }, 1500);
+                }
+                
+                // Función para generar respuestas de AMIE
+                function generarRespuestaAMIE(consulta) {
+                    const consultaLower = consulta.toLowerCase();
+                    
+                    // Diagnóstico diferencial
+                    if (consultaLower.includes('diagnóstico') || consultaLower.includes('diagnostico') || 
+                        consultaLower.includes('qué podría ser') || consultaLower.includes('que podria ser')) {
+                        return `
+                            <p>Basado en su consulta, aquí tiene un diagnóstico diferencial para considerar:</p>
+                            <div class="mt-2 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                                <h4 class="font-medium text-blue-800 mb-2">Diagnósticos diferenciales probables:</h4>
+                                <ol class="list-decimal pl-5 space-y-1 text-sm">
+                                    <li class="font-medium">Gastroenteritis aguda <span class="text-blue-600 font-normal">(40% de probabilidad)</span></li>
+                                    <li class="font-medium">Intoxicación alimentaria <span class="text-blue-600 font-normal">(30% de probabilidad)</span></li>
+                                    <li class="font-medium">Apendicitis temprana <span class="text-blue-600 font-normal">(15% de probabilidad)</span></li>
+                                    <li class="font-medium">Infección urinaria <span class="text-blue-600 font-normal">(10% de probabilidad)</span></li>
+                                    <li class="font-medium">Otras causas <span class="text-blue-600 font-normal">(5% de probabilidad)</span></li>
+                                </ol>
+                                <div class="mt-3 p-2 bg-white rounded border border-blue-200">
+                                    <p class="text-xs text-blue-700">
+                                        <i class="fa-solid fa-lightbulb text-yellow-500 mr-1"></i>
+                                        <strong>Recomendación:</strong> Se recomienda evaluar signos de alarma como fiebre alta, dolor abdominal intenso o persistente, y deshidratación. Considerar pruebas complementarias como hemograma, PCR y ecografía abdominal si los síntomas persisten.
+                                    </p>
+                                </div>
+                            </div>
+                            <p class="mt-3 text-sm text-gray-600">¿Le gustaría que profundice en alguno de estos diagnósticos o que revise algún aspecto específico del caso?</p>
+                        `;
+                    }
+                    
+                    // Tratamiento
+                    else if (consultaLower.includes('tratamiento') || consultaLower.includes('cómo tratar') || 
+                             consultaLower.includes('como tratar') || consultaLower.includes('qué hacer')) {
+                        return `
+                            <p>Para el manejo de esta condición, le sugiero el siguiente enfoque terapéutico:</p>
+                            <div class="mt-2 bg-green-50 p-3 rounded-lg border border-green-100">
+                                <h4 class="font-medium text-green-800 mb-2">Plan de tratamiento recomendado:</h4>
+                                
+                                <div class="mb-3">
+                                    <h5 class="font-medium text-sm text-green-700 mb-1">1. Medidas generales:</h5>
+                                    <ul class="list-disc pl-5 text-sm space-y-1">
+                                        <li>Reposo relativo según tolerancia</li>
+                                        <li>Hidratación oral abundante (sueros de rehidratación oral)</li>
+                                        <li>Dieta blanda, evitando lácteos, grasas y condimentos</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <h5 class="font-medium text-sm text-green-700 mb-1">2. Tratamiento farmacológico:</h5>
+                                    <div class="ml-1">
+                                        <div class="font-medium">a. Para el dolor y la fiebre:</div>
+                                        <ul class="list-disc pl-5 text-sm space-y-1">
+                                            <li>Paracetamol 500-1000 mg cada 8 horas (máx. 3g/día)</li>
+                                            <li>Evitar AINEs si hay sospecha de deshidratación</li>
+                                        </ul>
+                                        
+                                        <div class="font-medium mt-2">b. Para náuseas/vómitos:</div>
+                                        <ul class="list-disc pl-5 text-sm space-y-1">
+                                            <li>Ondansetrón 4-8 mg cada 8 horas según necesidad</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div class="p-2 bg-white rounded border border-green-200">
+                                    <p class="text-xs text-green-700">
+                                        <i class="fa-solid fa-triangle-exclamation text-yellow-500 mr-1"></i>
+                                        <strong>Precauciones:</strong> Monitorear signos de deshidratación. Reevaluar en 24-48 horas o antes si empeora. Considerar estudios de laboratorio si los síntomas persisten más de 3 días.
+                                    </p>
+                                </div>
+                            </div>
+                            <p class="mt-3 text-sm text-gray-600">¿Desea que le proporcione información sobre dosis específicas, contraindicaciones o interacciones de alguno de estos medicamentos?</p>
+                        `;
+                    }
+                    
+                    // Interacciones medicamentosas
+                    else if (consultaLower.includes('interacción') || consultaLower.includes('interaccion') || 
+                             consultaLower.includes('interactúa') || consultaLower.includes('interactua') ||
+                             consultaLower.includes('contraindicación') || consultaLower.includes('contraindicacion')) {
+                        return `
+                            <p>He analizado la posible interacción entre los medicamentos mencionados:</p>
+                            <div class="mt-2 bg-amber-50 p-3 rounded-lg border border-amber-100">
+                                <h4 class="font-medium text-amber-800 mb-2">Análisis de interacciones medicamentosas:</h4>
+                                
+                                <div class="mb-3">
+                                    <div class="flex items-center text-sm font-medium text-amber-700 mb-1">
+                                        <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                                        Interacción moderada detectada:
+                                    </div>
+                                    <div class="bg-white p-2 rounded border border-amber-200">
+                                        <div class="font-medium">Omeprazol + Clopidogrel</div>
+                                        <p class="text-xs text-amber-700">
+                                            El omeprazol puede reducir el efecto antiagregante plaquetario del clopidogrel al inhibir la enzima CYP2C19 necesaria para su activación.
+                                        </p>
+                                        <div class="mt-1 text-xs bg-amber-100 p-1 rounded">
+                                            <span class="font-medium">Gravedad:</span> Moderada
+                                            <span class="mx-2">|</span>
+                                            <span class="font-medium">Evidencia:</span> Probable
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <h5 class="font-medium text-sm text-amber-700 mb-1">Recomendaciones:</h5>
+                                    <ul class="list-disc pl-5 text-sm space-y-1">
+                                        <li>Evitar la asociación cuando sea posible</li>
+                                        <li>Considerar un IBP con menor inhibición de CYP2C19 como pantoprazol</li>
+                                        <li>Monitorizar la respuesta clínica al tratamiento antiplaquetario</li>
+                                        <li>Valorar alternativas no farmacológicas para la protección gástrica</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="p-2 bg-white rounded border border-amber-200 mt-3">
+                                    <p class="text-xs text-amber-700">
+                                        <i class="fa-solid fa-book-medical mr-1"></i>
+                                        <strong>Referencia:</strong> Guía de práctica clínica de la AHA/ACC 2021 sobre prevención secundaria de enfermedad cardiovascular.
+                                    </p>
+                                </div>
+                            </div>
+                            <p class="mt-3 text-sm text-gray-600">¿Desea que busque alternativas de tratamiento o más información sobre esta interacción?</p>
+                        `;
+                    }
+                    
+                    // Respuesta por defecto
+                    return `
+                        <p>Gracias por su consulta. Para proporcionarle la información más precisa, por favor indíqueme:</p>
+                        <ul class="list-disc pl-5 mt-2 space-y-1 text-sm">
+                            <li>¿Cuál es la condición o síntoma principal que desea tratar?</li>
+                            <li>¿Tiene alguna alergia o condición médica relevante?</li>
+                            <li>¿Qué medicamentos está tomando actualmente?</li>
+                            <li>¿Ha probado algún tratamiento previo para esta condición?</li>
+                        </ul>
+                        <div class="mt-3 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                            <p class="text-sm text-blue-800">
+                                <i class="fa-solid fa-lightbulb text-blue-500 mr-1"></i>
+                                <strong>Sugerencia:</strong> Puede hacer preguntas como:
+                            </p>
+                            <ul class="list-disc pl-5 mt-1 text-sm text-blue-700 space-y-1">
+                                <li>"¿Cuál sería el diagnóstico diferencial para dolor torácico en un paciente de 45 años?"</li>
+                                <li>"¿Cuál es el tratamiento de primera línea para la hipertensión arterial?"</li>
+                                <li>"¿Qué interacciones tiene la warfarina con AINEs?"</li>
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                // Función para limpiar el chat de AMIE
+                function limpiarChatAMIE() {
+                    if (confirm('¿Está seguro de que desea limpiar la conversación actual? Esta acción no se puede deshacer.')) {
+                        const chat = document.getElementById('amieChat');
+                        if (chat) {
+                            // Mantener solo el mensaje de bienvenida
+                            const welcomeMsg = chat.querySelector('.flex.items-start:first-child');
+                            chat.innerHTML = '';
+                            if (welcomeMsg) {
+                                chat.appendChild(welcomeMsg);
+                            } else {
+                                // Si no hay mensaje de bienvenida, crear uno
+                                const welcomeDiv = document.createElement('div');
+                                welcomeDiv.className = 'flex items-start';
+                                welcomeDiv.innerHTML = `
+                                    <div class="w-8 h-8 rounded-full bg-blue-100 flex-shrink-0 flex items-center justify-center">
+                                        <i class="fa-solid fa-robot text-blue-600"></i>
+                                    </div>
+                                    <div class="ml-3 max-w-3xl">
+                                        <div class="bg-white p-4 rounded-xl rounded-tl-none shadow-sm border border-gray-200">
+                                            <div class="flex items-center justify-between mb-2">
+                                                <span class="font-medium text-sm text-gray-700">AMIE</span>
+                                            </div>
+                                            <p class="text-gray-800">La conversación ha sido reiniciada. ¿En qué puedo ayudarlo hoy?</p>
+                                        </div>
+                                    </div>
+                                `;
+                                chat.appendChild(welcomeDiv);
+                            }
+                            chat.scrollTop = chat.scrollHeight;
+                        }
+                    }
+                }
+                
+                // Función para exportar la consulta
+                function exportarConsulta() {
+                    // Simular la exportación (en un entorno real, esto generaría un archivo)
+                    alert('Función de exportación activada. En un entorno real, esto generaría un archivo PDF o DOCX con el historial de la conversación.');
+                    // Aquí iría el código para generar y descargar el archivo
+                }
+                function iniciarConsulta(tipo) {
+                    const chatContainer = document.getElementById('chatAsistencia');
+                    const chatMensajes = document.getElementById('chatMensajes');
+                    
+                    // Mostrar el chat
+                    chatContainer.classList.remove('hidden');
+                    
+                    // Limpiar mensajes anteriores
+                    chatMensajes.innerHTML = '';
+                    
+                    // Agregar mensaje de bienvenida según el tipo de consulta
+                    let mensajeBienvenida = '';
+                    if (tipo === 'video') {
+                        mensajeBienvenida = '¡Hola! Estamos conectándote con un médico para tu videoconsulta. Por favor, espera un momento...';
+                        // Aquí iría la lógica para iniciar la videollamada
+                    } else {
+                        mensajeBienvenida = '¡Hola! Soy tu asistente médico virtual. ¿En qué puedo ayudarte hoy?';
+                    }
+                    
+                    agregarMensaje('asistente', mensajeBienvenida);
+                    
+                    // Si es chat, hacer scroll al final
+                    if (tipo === 'chat') {
+                        chatMensajes.scrollTop = chatMensajes.scrollHeight;
+                    }
+                }
+                
+                function agregarMensaje(remitente, texto) {
+                    const chatMensajes = document.getElementById('chatMensajes');
+                    const mensajeDiv = document.createElement('div');
+                    
+                    if (remitente === 'usuario') {
+                        mensajeDiv.className = 'flex justify-end mb-3';
+                        mensajeDiv.innerHTML = `
+                            <div class="bg-blue-600 text-white p-3 rounded-l-xl rounded-tr-xl max-w-xs">
+                                <p class="text-sm">${texto}</p>
+                                <div class="text-right mt-1">
+                                    <span class="text-xs opacity-70">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        mensajeDiv.className = 'flex mb-3';
+                        mensajeDiv.innerHTML = `
+                            <div class="w-8 h-8 rounded-full bg-gray-200 flex-shrink-0 flex items-center justify-center">
+                                <i class="fa-solid fa-robot text-gray-600"></i>
+                            </div>
+                            <div class="ml-3 max-w-3xl">
+                                <div class="bg-white p-4 rounded-r-xl rounded-bl-xl shadow-sm border max-w-xs">
+                                    <p class="text-sm">${texto}</p>
+                                    <div class="text-right mt-1">
+                                        <span class="text-xs text-gray-500">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    chatMensajes.appendChild(mensajeDiv);
+                    chatMensajes.scrollTop = chatMensajes.scrollHeight;
+                }
+                
+                function enviarMensajeChat() {
+                    const input = document.getElementById('mensajeChat');
+                    const texto = input.value.trim();
+                    
+                    if (!texto) return;
+                    
+                    // Agregar mensaje del usuario
+                    agregarMensaje('usuario', texto);
+                    input.value = '';
+                    
+                    // Simular respuesta automática después de un breve retraso
+                    setTimeout(() => {
+                        const respuestas = [
+                            'Entiendo tu consulta. ¿Podrías proporcionar más detalles sobre tus síntomas?',
+                            'Gracias por la información. Voy a analizarla y te daré una respuesta en breve.',
+                            'Para ayudarte mejor, ¿podrías indicarme desde cuándo experimentas estos síntomas?',
+                            'Recomiendo que para una evaluación más precisa, consultes con un médico en persona. ¿Te gustaría que te ayude a agendar una cita?',
+                            'Basado en la información proporcionada, te sugiero [recomendación]. Sin embargo, es importante que consultes con un profesional de la salud para un diagnóstico preciso.'
+                        ];
+                        
+                        const respuestaAleatoria = respuestas[Math.floor(Math.random() * respuestas.length)];
+                        agregarMensaje('asistente', respuestaAleatoria);
+                    }, 1000);
+                }
+                
+                // Actualizar contador de caracteres
+                document.getElementById('mensajeChat')?.addEventListener('input', function() {
+                    const maxLength = 500;
+                    const currentLength = this.value.length;
+                    const contador = document.getElementById('contadorCaracteres');
+                    
+                    contador.textContent = `${currentLength}/${maxLength}`;
+                    
+                    if (currentLength > maxLength) {
+                        contador.classList.add('text-red-500');
+                        this.value = this.value.substring(0, maxLength);
+                    } else {
+                        contador.classList.remove('text-red-500');
+                    }
+                });
+                </script>
+            </div>
+        
+            <!-- Contenido para Médico - Google AMIE -->
+            <div id="contenidoMedicoIA" class="hidden">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden max-w-6xl mx-2 sm:mx-4 md:mx-auto border border-gray-200">
+                    <!-- Encabezado AMIE -->
+                    <div class="bg-gradient-to-r from-blue-700 to-blue-900 p-4 text-white flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-white p-2 rounded-lg">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" fill="#34A853"/>
+                                    <path d="M12 6C9.79 6 8 7.79 8 10H10C10 8.9 10.9 8 12 8C13.1 8 14 8.9 14 10C14 12 11 11.75 11 15H13C13 12.75 16 12.5 16 10C16 7.79 14.21 6 12 6Z" fill="#EA4335"/>
+                                    <path d="M11 16V18H13V16H11Z" fill="#FBBC05"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold flex items-center gap-2">
+                                    <span>Google AMIE</span>
+                                    <span class="text-xs bg-yellow-400 text-yellow-900 px-2 py-0.5 rounded-full">BETA</span>
+                                </h3>
+                                <p class="text-sm opacity-90">Articulate Medical Intelligence Explorer - Herramienta de apoyo clínico</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button id="toggleSidebar" class="text-blue-200 hover:text-white p-2 rounded-full hover:bg-blue-800 transition-colors" title="Ver historial">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                            </button>
+                            <button class="text-blue-200 hover:text-white p-2 rounded-full hover:bg-blue-800 transition-colors" title="Configuración">
+                                <i class="fa-solid fa-gear"></i>
+                            </button>
+                            <div class="h-6 w-px bg-blue-500 mx-1"></div>
+                            <div class="flex items-center gap-2 bg-blue-800 px-3 py-1 rounded-full">
+                                <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                                <span class="text-xs font-medium">Conectado</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contenedor principal -->
+                    <div class="flex flex-col md:flex-row h-[calc(100vh-200px)] min-h-[500px] bg-white">
+                        <!-- Sidebar de historial (inicialmente oculto) -->
+                        <div id="amieSidebar" class="w-full md:w-64 border-b md:border-r border-gray-200 bg-gray-50 flex-shrink-0 overflow-y-auto hidden h-48 md:h-auto">
+                            <div class="p-4 border-b border-gray-200">
+                                <h4 class="font-semibold text-gray-700 mb-2 flex items-center justify-between">
+                                    <span>Historial de consultas</span>
+                                    <button id="closeSidebar" class="text-gray-400 hover:text-gray-600">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </h4>
+                                <div class="relative mt-2">
+                                    <input type="text" placeholder="Buscar consultas..." class="w-full text-sm border border-gray-300 rounded-lg pl-8 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-gray-400 text-sm"></i>
+                                </div>
+                            </div>
+                            <div class="divide-y divide-gray-200">
+                                <!-- Ejemplo de elemento de historial -->
+                                <div class="p-3 hover:bg-blue-50 cursor-pointer border-l-4 border-blue-500 bg-blue-50">
+                                    <div class="text-sm font-medium text-gray-900 line-clamp-1">Consulta actual</div>
+                                    <div class="text-xs text-gray-500 mt-1">Hoy, 14:32</div>
+                                </div>
+                                <!-- Más elementos de historial se agregarían dinámicamente -->
+                            </div>
+                        </div>
+                        
+                        <!-- Área de chat principal -->
+                        <div class="flex-1 flex flex-col min-w-0">
+                            <!-- Barra de herramientas -->
+                            <div class="border-b border-gray-200 p-2 flex items-center justify-between bg-white">
+                                <div class="flex items-center space-x-2">
+                                    <button class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg" title="Nueva consulta">
+                                        <i class="fa-regular fa-plus"></i>
+                                    </button>
+                                    <button class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg" title="Exportar conversación">
+                                        <i class="fa-regular fa-download"></i>
+                                    </button>
+                                    <div class="h-6 w-px bg-gray-300 mx-1"></div>
+                                    <button class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg" title="Imprimir">
+                                        <i class="fa-regular fa-print"></i>
+                                    </button>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">Modo: <span class="font-medium">Asistente</span></span>
+                                    <button class="text-xs text-blue-600 hover:bg-blue-50 px-2 py-1 rounded">Cambiar</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Área de mensajes -->
+                            <div class="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50" id="amieChat">
+                                <!-- Mensaje de bienvenida -->
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-blue-100 flex-shrink-0 flex items-center justify-center">
+                                        <i class="fa-solid fa-robot text-blue-600"></i>
+                                    </div>
+                                    <div class="ml-3 max-w-3xl">
+                                        <div class="bg-white p-4 rounded-xl rounded-tl-none shadow-sm border border-gray-200">
+                                            <div class="flex items-center justify-between mb-2">
+                                                <span class="font-medium text-sm text-gray-700">AMIE</span>
+                                            </div>
+                                            <p class="text-gray-800">La conversación ha sido reiniciada. ¿En qué puedo ayudarlo hoy?</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    
+                    <!-- Entrada de texto -->
+                    <div class="border-t p-3 bg-white">
+                        <div class="flex items-end gap-2 mb-2">
+                                <div class="flex-1 relative min-w-0">
+                                <div class="flex items-center mb-1">
+                                    <span class="text-xs font-medium text-gray-500 mr-2">Modo:</span>
+                                    <div class="flex space-x-1 bg-gray-100 p-0.5 rounded-lg">
+                                        <button class="text-xs px-2 py-1 rounded-md bg-white shadow text-blue-700 font-medium">Asistente</button>
+                                        <button class="text-xs px-2 py-1 rounded-md text-gray-500 hover:bg-gray-50">Investigación</button>
+                                        <button class="text-xs px-2 py-1 rounded-md text-gray-500 hover:bg-gray-50">Educación</button>
+                                    </div>
+                                </div>
+                                <div class="relative">
+                                    <textarea id="amieInput" rows="1" class="w-full border border-gray-300 rounded-xl py-3 px-4 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none" placeholder="Escriba su consulta médica o instrucción..." style="min-height: 48px;"></textarea>
+                                    <div class="absolute right-3 bottom-3 flex gap-1">
+                                        <button type="button" class="text-gray-400 hover:text-blue-500 p-1 rounded-full hover:bg-gray-100" title="Adjuntar archivo">
+                                            <i class="fa-solid fa-paperclip"></i>
+                                        </button>
+                                        <button type="button" class="text-gray-400 hover:text-blue-500 p-1 rounded-full hover:bg-gray-100" title="Grabar audio">
+                                            <i class="fa-solid fa-microphone"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                Ejemplo 2
+                            </button>
+                            <button onclick="ejemploConsulta('Interacciones entre omeprazol y clopidogrel')" 
+                                    class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1 rounded-full">
+                                Ejemplo 3
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Panel de herramientas -->
+                    <div class="bg-gray-50 border-t p-3">
+                        <div class="flex justify-between items-center text-sm">
+                            <div class="flex items-center gap-2 text-gray-600">
+                                <i class="fa-solid fa-shield-halved text-green-500"></i>
+                                <span>Protegido por cifrado de extremo a extremo</span>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <button onclick="limpiarChatAMIE()" class="text-gray-500 hover:text-gray-700">
+                                    <i class="fa-solid fa-trash-can"></i> Limpiar
+                                </button>
+                                <button onclick="exportarConsulta()" class="text-blue-600 hover:text-blue-800">
+                                    <i class="fa-solid fa-download"></i> Exportar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Información sobre AMIE -->
+                <div class="mt-6 bg-white p-4 rounded-xl shadow max-w-4xl mx-2 sm:mx-4 md:mx-auto">
+                    <h4 class="font-semibold text-gray-800 mb-3">Acerca de AMIE</h4>
+                    <div class="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
+                        <div class="flex items-start gap-3">
+                            <i class="fa-solid fa-lightbulb text-yellow-500 mt-1"></i>
+                            <div>
+                                <p class="font-medium">Diagnóstico Asistido</p>
+                                <p class="text-xs">Sugerencias de diagnósticos diferenciales basados en síntomas</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <i class="fa-solid fa-pills text-blue-500 mt-1"></i>
+                            <div>
+                                <p class="font-medium">Interacciones Medicamentosas</p>
+                                <p class="text-xs">Verificación automática de posibles interacciones entre medicamentos</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <i class="fa-solid fa-book-medical text-green-500 mt-1"></i>
+                            <div>
+                                <p class="font-medium">Base de Conocimiento</p>
+                                <p class="text-xs">Acceso a información médica actualizada y verificada</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <i class="fa-solid fa-user-doctor text-purple-500 mt-1"></i>
+                            <div>
+                                <p class="font-medium">Asistencia Clínica</p>
+                                <p class="text-xs">Recomendaciones basadas en guías clínicas actuales</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-xs text-gray-400 text-center">
+                        <p>AMIE es una herramienta de apoyo a la decisión clínica. No reemplaza el juicio profesional.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+          <!-- Recetario -->
+        <section id="recetario" class="section hidden">
+            <div class="text-center mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h2 class="text-3xl font-extrabold text-blue-800 mb-2 flex items-center justify-center gap-3">
+                        <i class="fa-solid fa-prescription text-yellow-500"></i>
+                        Recetario Digital
+                    </h2>
+                    <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                        Emite, autoriza y sigue el estado de recetas digitales.
+                    </p>
+                </div>
+                <button id="btnNuevaReceta" class="hidden bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-xl shadow font-semibold flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Nueva Receta
+                </button>
+            </div>
+            <div id="recetarioContenido"></div>
+            <!-- Modal nueva receta (simulado) -->
+            <div id="modalReceta" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center">
+                <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md relative">
+                    <button onclick="cerrarReceta()" class="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-xl">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <h3 class="text-xl font-bold text-yellow-700 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-prescription text-yellow-500"></i> Crear Nueva Receta
+                    </h3>
+                    <form id="formReceta" class="grid gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Paciente</label>
+                            <input type="text" id="recetaPaciente" class="w-full border rounded px-3 py-2" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Medicamento</label>
+                            <input type="text" id="recetaMedicamento" class="w-full border rounded px-3 py-2" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Descuento (%)</label>
+                            <input type="number" id="recetaDescuento" class="w-full border rounded px-3 py-2" min="0" max="100" value="0">
+                        </div>
+                        <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded font-bold mt-2">
+                            Guardar Receta
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <!-- Modal autorizar receta (auditador) -->
+            <div id="modalAutorizar" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center">
+                <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md relative">
+                    <button onclick="cerrarAutorizar()" class="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-xl">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <h3 class="text-xl font-bold text-green-700 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-user-shield text-green-500"></i> Autorizar Receta
+                    </h3>
+                    <form id="formAutorizar" class="grid gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Observación</label>
+                            <textarea id="autorizarObs" class="w-full border rounded px-3 py-2" rows="2"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Descuento (%)</label>
+                            <input type="number" id="autorizarDesc" class="w-full border rounded px-3 py-2" min="0" max="100" value="0">
+                        </div>
+                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-bold mt-2">
+                            Autorizar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+        <!-- Tablero de Control -->
+        <section id="tablero" class="section hidden">
+            <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-blue-800 flex items-center gap-2">
+                <i class="fa-solid fa-chart-pie text-purple-500"></i>
+                Tablero de Control
+            </h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white rounded-xl shadow p-4 flex flex-col items-center">
+                <div class="text-2xl font-bold text-blue-700 mb-1">65%</div>
+                <div class="text-gray-700 text-sm mb-1">Asistencia a turnos</div>
+                <div class="text-xs text-red-500">Objetivo: &gt; 70% (No cumple)</div>
+                <div style="width:120px;height:120px;display:flex;align-items:center;justify-content:center;">
+                <canvas id="pieAsistencia" width="100" height="100"></canvas>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4 flex flex-col items-center">
+                <div class="text-2xl font-bold text-green-700 mb-1">0.8</div>
+                <div class="text-gray-700 text-sm mb-1">Tiempo espera real/óptimo</div>
+                <div class="text-xs text-gray-400">Objetivo: &lt; 1</div>
+                <div style="width:120px;height:120px;display:flex;align-items:center;justify-content:center;">
+                <canvas id="pieEspera" width="100" height="100"></canvas>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4 flex flex-col items-center">
+                <div class="text-2xl font-bold text-yellow-700 mb-1">1</div>
+                <div class="text-gray-700 text-sm mb-1">Trazabilidad receta digital</div>
+                <div class="text-xs text-gray-400">Objetivo: = 1</div>
+                <div style="width:120px;height:120px;display:flex;align-items:center;justify-content:center;">
+                <canvas id="pieTrazabilidad" width="100" height="100"></canvas>
+                </div>
+            </div>
+            </div>
+            
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+            document.addEventListener('DOMContentLoaded', function () {
+            
+            // Asistencia a turnos
+            if (document.getElementById('pieAsistencia')) {
+                new Chart(document.getElementById('pieAsistencia').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Asistidos', 'No asistidos'],
+                    datasets: [{
+                    data: [65, 35],
+                    backgroundColor: [
+                        'rgba(59,130,246,0.7)',
+                        'rgba(203,213,225,0.5)'
+                    ],
+                    borderColor: [
+                        'rgba(59,130,246,1)',
+                        'rgba(203,213,225,1)'
+                    ],
+                    borderWidth: 2
+                    }]
+                },
+                options: {
+                    cutout: '70%',
+                    plugins: { legend: { display: false } }
+                }
+                });
+            }
+            // Tiempo espera real/óptimo
+            if (document.getElementById('pieEspera')) {
+                new Chart(document.getElementById('pieEspera').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Óptimo', 'Excedente'],
+                    datasets: [{
+                    data: [80, 20],
+                    backgroundColor: [
+                        'rgba(34,197,94,0.7)',
+                        'rgba(203,213,225,0.5)'
+                    ],
+                    borderColor: [
+                        'rgba(34,197,94,1)',
+                        'rgba(203,213,225,1)'
+                    ],
+                    borderWidth: 2
+                    }]
+                },
+                options: {
+                    cutout: '70%',
+                    plugins: { legend: { display: false } }
+                }
+                });
+            }
+            // Trazabilidad receta digital
+            if (document.getElementById('pieTrazabilidad')) {
+                new Chart(document.getElementById('pieTrazabilidad').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Trazadas', 'No trazadas'],
+                    datasets: [{
+                    data: [100, 0],
+                    backgroundColor: [
+                        'rgba(253,224,71,0.7)',
+                        'rgba(203,213,225,0.5)'
+                    ],
+                    borderColor: [
+                        'rgba(253,224,71,1)',
+                        'rgba(203,213,225,1)'
+                    ],
+                    borderWidth: 2
+                    }]
+                },
+                options: {
+                    cutout: '70%',
+                    plugins: { legend: { display: false } }
+                }
+                });
+            }
+            });
+            </script>
+        </section>
+        <script>
+        // --- Datos simulados ---
+        const turnosSimulados = [
+            { fecha: "2024-06-10", hora: "08:00", paciente: "Juan Pérez", profesional: "Dra. Gómez", especialidad: "Clínica", estado: "Confirmado", medico: "Dra. Gómez" },
+            { fecha: "2024-06-10", hora: "08:20", paciente: "Ana López", profesional: "Dra. Gómez", especialidad: "Clínica", estado: "Pendiente", medico: "Dra. Gómez" },
+            { fecha: "2024-06-10", hora: "08:40", paciente: "Carlos Ruiz", profesional: "Dra. Gómez", especialidad: "Clínica", estado: "Confirmado", medico: "Dra. Gómez" },
+            { fecha: "2024-06-10", hora: "09:00", paciente: "María Torres", profesional: "Dra. Gómez", especialidad: "Clínica", estado: "Pendiente", medico: "Dra. Gómez" },
+            { fecha: "2024-06-10", hora: "09:20", paciente: "Pedro Gómez", profesional: "Dra. Gómez", especialidad: "Clínica", estado: "Confirmado", medico: "Dra. Gómez" },
+            { fecha: "2024-06-10", hora: "09:40", paciente: "Lucía Fernández", profesional: "Dra. Gómez", especialidad: "Clínica", estado: "Pendiente", medico: "Dra. Gómez" },
+            { fecha: "2024-06-10", hora: "10:00", paciente: "Sofía Martínez", profesional: "Dra. Gómez", especialidad: "Clínica", estado: "Confirmado", medico: "Dra. Gómez" },
+            { fecha: "2024-06-10", hora: "10:20", paciente: "Miguel Castro", profesional: "Dra. Gómez", especialidad: "Clínica", estado: "Pendiente", medico: "Dra. Gómez" },
+            { fecha: "2024-06-10", hora: "10:40", paciente: "Laura Díaz", profesional: "Dra. Gómez", especialidad: "Clínica", estado: "Confirmado", medico: "Dra. Gómez" },
+            { fecha: "2024-06-10", hora: "11:00", paciente: "Javier Romero", profesional: "Dra. Gómez", especialidad: "Clínica", estado: "Pendiente", medico: "Dra. Gómez" },
+            { fecha: "2024-06-10", hora: "11:20", paciente: "Valeria Sosa", profesional: "Dra. Gómez", especialidad: "Clínica", estado: "Confirmado", medico: "Dra. Gómez" },
+            { fecha: "2024-06-10", hora: "11:40", paciente: "Martín López", profesional: "Dra. Gómez", especialidad: "Clínica", estado: "Pendiente", medico: "Dra. Gómez" },
+            { fecha: "2024-06-10", hora: "12:00", paciente: "Paula Ríos", profesional: "Dra. Gómez", especialidad: "Clínica", estado: "Confirmado", medico: "Dra. Gómez" },
+            { fecha: "2024-06-10", hora: "12:20", paciente: "Diego Vargas", profesional: "Dra. Gómez", especialidad: "Clínica", estado: "Pendiente", medico: "Dra. Gómez" },
+            { fecha: "2024-06-10", hora: "12:40", paciente: "Camila Herrera", profesional: "Dra. Gómez", especialidad: "Clínica", estado: "Confirmado", medico: "Dra. Gómez" },
+            { fecha: "2024-06-12", hora: "11:30", paciente: "Ana López", profesional: "Dr. Pérez", especialidad: "Pediatría", estado: "Pendiente", medico: "Dr. Pérez" },
+            { fecha: "2024-06-10", hora: "13:00", paciente: "Carlos Ruiz", profesional: "Dr. Pérez", especialidad: "Clínica", estado: "Confirmado", medico: "Dr. Pérez" }
+        ];
+        const recetasSimuladas = [
+            { paciente: "Juan Pérez", medicamento: "Paracetamol", estado: "Entregado", descuento: 20, creador: "Dr. Pérez" },
+            { paciente: "Ana López", medicamento: "Ibuprofeno", estado: "Pendiente", descuento: 10, creador: "Dr. Pérez" },
+            { paciente: "Carlos Ruiz", medicamento: "Amoxicilina", estado: "Pendiente", descuento: 0, creador: "Dra. Gómez" },
+            { paciente: "María Torres", medicamento: "Loratadina", estado: "Pendiente", descuento: 0, creador: "Dra. Gómez" }
+        ];
+        let recetasMedico = [];
+        let medicoActual = "Dr. Pérez";
+        let recetaAuditandoIdx = null;
+
+        function renderTurnero(userType) {
+            const cont = document.getElementById('turneroContenido');
+            cont.innerHTML = '';
+            if (userType === "Paciente") {
+                const turnos = turnosSimulados.filter(t => t.paciente === "Juan Pérez");
+                cont.innerHTML = `
+                    <table class="w-full text-left">
+                    <thead>
+                        <tr>
+                        <th class="py-2 px-4">Fecha</th>
+                        <th class="py-2 px-4">Hora</th>
+                        <th class="py-2 px-4">Profesional</th>
+                        <th class="py-2 px-4">Especialidad</th>
+                        <th class="py-2 px-4">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${turnos.map(t => `
+                        <tr>
+                            <td class="py-2 px-4">${t.fecha}</td>
+                            <td class="py-2 px-4">${t.hora}</td>
+                            <td class="py-2 px-4">${t.profesional}</td>
+                            <td class="py-2 px-4">${t.especialidad}</td>
+                            <td class="py-2 px-4"><span class="bg-${t.estado === "Confirmado" ? "green" : "yellow"}-100 text-${t.estado === "Confirmado" ? "green" : "yellow"}-700 px-2 py-1 rounded">${t.estado}</span></td>
+                        </tr>
+                        `).join('')}
+                    </tbody>
+                    </table>
+                    </div>
+                `;
+            } else if (userType === "Médico") {
+                const hoy = "2024-06-10";
+                const turnos = turnosSimulados.filter(t => t.medico === medicoActual && t.fecha === hoy);
+                if (turnos.length === 0) {
+                    cont.innerHTML = `<div class="text-center text-gray-500 py-8">No tiene turnos asignados para hoy.</div>`;
+                } else {
+                    cont.innerHTML = `
+                    <div class="mb-4 font-bold text-blue-700">Pacientes a atender hoy (${hoy}):</div>
+                    <div class="overflow-x-auto">
+                    <table class="w-full text-left min-w-[500px] sm:min-w-0">
+                        <thead>
+                        <tr>
+                            <th class="py-2 px-4">Hora</th>
+                            <th class="py-2 px-4">Paciente</th>
+                            <th class="py-2 px-4">Especialidad</th>
+                            <th class="py-2 px-4">Estado</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        ${turnos.map(t => `
+                            <tr>
+                            <td class="py-2 px-4">${t.hora}</td>
+                            <td class="py-2 px-4">${t.paciente}</td>
+                            <td class="py-2 px-4">${t.especialidad}</td>
+                            <td class="py-2 px-4"><span class="bg-${t.estado === "Confirmado" ? "green" : "yellow"}-100 text-${t.estado === "Confirmado" ? "green" : "yellow"}-700 px-2 py-1 rounded">${t.estado}</span></td>
+                            </tr>
+                        `).join('')}
+                        </tbody>
+                    </table>
+                    </div>
+                    `;
+                }
+            } else if (userType === "Administrador") {
+                cont.innerHTML = `
+                    <table class="w-full text-left">
+                    <thead>
+                        <tr>
+                        <th class="py-2 px-4">Fecha</th>
+                        <th class="py-2 px-4">Hora</th>
+                        <th class="py-2 px-4">Paciente</th>
+                        <th class="py-2 px-4">Profesional</th>
+                        <th class="py-2 px-4">Especialidad</th>
+                        <th class="py-2 px-4">Estado</th>
+                        <th class="py-2 px-4 whitespace-nowrap">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${turnosSimulados.map((t, idx) => `
+                        <tr>
+                            <td class="py-2 px-4">${t.fecha}</td>
+                            <td class="py-2 px-4">${t.hora}</td>
+                            <td class="py-2 px-4">${t.paciente}</td>
+                            <td class="py-2 px-4">${t.profesional}</td>
+                            <td class="py-2 px-4">${t.especialidad}</td>
+                            <td class="py-2 px-4"><span class="bg-${t.estado === "Confirmado" ? "green" : "yellow"}-100 text-${t.estado === "Confirmado" ? "green" : "yellow"}-700 px-2 py-1 rounded">${t.estado}</span></td>
+                            <td class="py-2 px-4 flex gap-1 sm:gap-2 flex-wrap">
+                            <button onclick="eliminarTurno(${idx})" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs whitespace-nowrap"><i class="fa-solid fa-trash"></i> <span class="hidden sm:inline">Eliminar</span></button>
+                            <button onclick="reasignarTurno(${idx})" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs whitespace-nowrap"><i class="fa-solid fa-user-pen"></i> <span class="hidden sm:inline">Reasignar</span></button>
+                            </td>
+                        </tr>
+                        `).join('')}
+                    </tbody>
+                    </table>
+                    </div>
+                `;
+            }
+        }
+
+        function renderRecetario(userType) {
+            const cont = document.getElementById('recetarioContenido');
+            const btnNueva = document.getElementById('btnNuevaReceta');
+            cont.innerHTML = '';
+            btnNueva.classList.add('hidden');
+            if (userType === "Paciente") {
+                const recetas = recetasSimuladas.filter(r => r.paciente === "Juan Pérez");
+                cont.innerHTML = `
+                    <table class="w-full text-left">
+                    <thead>
+                        <tr>
+                        <th class="py-2 px-4">Medicamento</th>
+                        <th class="py-2 px-4">Estado</th>
+                        <th class="py-2 px-4">Descuento</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${recetas.map(r => `
+                        <tr>
+                            <td class="py-2 px-4">${r.medicamento}</td>
+                            <td class="py-2 px-4"><span class="bg-${r.estado === "Entregado" ? "green" : "yellow"}-100 text-${r.estado === "Entregado" ? "green" : "yellow"}-700 px-2 py-1 rounded">${r.estado}</span></td>
+                            <td class="py-2 px-4">${r.descuento}%</td>
+                        </tr>
+                        `).join('')}
+                    </tbody>
+                    </table>
+                    </div>
+                `;
+            } else if (userType === "Médico") {
+                btnNueva.classList.remove('hidden');
+                recetasMedico = recetasSimuladas.filter(r => r.creador === medicoActual);
+                cont.innerHTML = `
+                    <table class="w-full text-left">
+                    <thead>
+                        <tr>
+                        <th class="py-2 px-4">Paciente</th>
+                        <th class="py-2 px-4">Medicamento</th>
+                        <th class="py-2 px-4">Estado</th>
+                        <th class="py-2 px-4">Descuento</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${recetasMedico.map(r => `
+                        <tr>
+                            <td class="py-2 px-4">${r.paciente}</td>
+                            <td class="py-2 px-4">${r.medicamento}</td>
+                            <td class="py-2 px-4"><span class="bg-${r.estado === "Entregado" ? "green" : "yellow"}-100 text-${r.estado === "Entregado" ? "green" : "yellow"}-700 px-2 py-1 rounded">${r.estado}</span></td>
+                            <td class="py-2 px-4">${r.descuento}%</td>
+                        </tr>
+                        `).join('')}
+                    </tbody>
+                    </table>
+                    </div>
+                `;
+            } else if (userType === "Administrador") {
+                cont.innerHTML = `
+                    <table class="w-full text-left">
+                    <thead>
+                        <tr>
+                        <th class="py-2 px-4">Paciente</th>
+                        <th class="py-2 px-4">Medicamento</th>
+                        <th class="py-2 px-4">Estado</th>
+                        <th class="py-2 px-4">Descuento</th>
+                        <th class="py-2 px-4">Creador</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${recetasSimuladas.map(r => `
+                        <tr>
+                            <td class="py-2 px-4">${r.paciente}</td>
+                            <td class="py-2 px-4">${r.medicamento}</td>
+                            <td class="py-2 px-4"><span class="bg-${r.estado === "Entregado" ? "green" : "yellow"}-100 text-${r.estado === "Entregado" ? "green" : "yellow"}-700 px-2 py-1 rounded">${r.estado}</span></td>
+                            <td class="py-2 px-4">${r.descuento}%</td>
+                            <td class="py-2 px-4">${r.creador}</td>
+                        </tr>
+                        `).join('')}
+                    </tbody>
+                    </table>
+                    </div>
+                `;
+            } else if (userType === "Auditador") {
+                cont.innerHTML = `
+                    <table class="w-full text-left">
+                    <thead>
+                        <tr>
+                        <th class="py-2 px-4">Paciente</th>
+                        <th class="py-2 px-4">Medicamento</th>
+                        <th class="py-2 px-4">Descuento</th>
+                        <th class="py-2 px-4">Creador</th>
+                        <th class="py-2 px-4">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${recetasSimuladas.map((r, idx) => r.estado === "Pendiente" ? `
+                        <tr>
+                            <td class="py-2 px-4">${r.paciente}</td>
+                            <td class="py-2 px-4">${r.medicamento}</td>
+                            <td class="py-2 px-4">${r.descuento}%</td>
+                            <td class="py-2 px-4">${r.creador}</td>
+                            <td class="py-2 px-4">
+                                <button onclick="abrirAutorizar(${idx})" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs flex items-center gap-1">
+                                    <i class="fa-solid fa-check"></i> Autorizar
+                                </button>
+                            </td>
+                        </tr>
+                        ` : '').join('')}
+                    </tbody>
+                    </table>
+                    </div>
+                `;
+            }
+        }
+
+        function eliminarTurno(idx) {
+            if (confirm("¿Está seguro de eliminar este turno?")) {
+                turnosSimulados.splice(idx, 1);
+                renderTurnero("Administrador");
+            }
+        }
+        function reasignarTurno(idx) {
+            const nuevoMedico = prompt("Ingrese el nuevo profesional para este turno:", turnosSimulados[idx].profesional);
+            if (nuevoMedico) {
+                turnosSimulados[idx].profesional = nuevoMedico;
+                turnosSimulados[idx].medico = nuevoMedico;
+                renderTurnero("Administrador");
+            }
+        }
+
+        document.getElementById('btnCalendario').onclick = function() {
+            document.getElementById('modalCalendario').classList.remove('hidden');
+        };
+        function cerrarCalendario() {
+            document.getElementById('modalCalendario').classList.add('hidden');
+        }
+
+        document.getElementById('btnNuevaReceta').onclick = function() {
+            document.getElementById('modalReceta').classList.remove('hidden');
+        };
+        function cerrarReceta() {
+            document.getElementById('modalReceta').classList.add('hidden');
+        }
+        document.getElementById('formReceta').onsubmit = function(e) {
+            e.preventDefault();
+            const paciente = document.getElementById('recetaPaciente').value;
+            const medicamento = document.getElementById('recetaMedicamento').value;
+            const descuento = parseInt(document.getElementById('recetaDescuento').value, 10) || 0;
+            recetasSimuladas.push({ paciente, medicamento, estado: "Pendiente", descuento, creador: medicoActual });
+            cerrarReceta();
+            renderRecetario("Médico");
+        };
+
+        function abrirAutorizar(idx) {
+            recetaAuditandoIdx = idx;
+            document.getElementById('autorizarObs').value = recetasSimuladas[idx].observacion || "";
+            document.getElementById('autorizarDesc').value = recetasSimuladas[idx].descuento || 0;
+            document.getElementById('modalAutorizar').classList.remove('hidden');
+        }
+        function cerrarAutorizar() {
+            document.getElementById('modalAutorizar').classList.add('hidden');
+            recetaAuditandoIdx = null;
+        }
+        document.getElementById('formAutorizar').onsubmit = function(e) {
+            e.preventDefault();
+            if (recetaAuditandoIdx !== null) {
+                recetasSimuladas[recetaAuditandoIdx].estado = "Entregado";
+                recetasSimuladas[recetaAuditandoIdx].observacion = document.getElementById('autorizarObs').value;
+                recetasSimuladas[recetaAuditandoIdx].descuento = parseInt(document.getElementById('autorizarDesc').value, 10) || 0;
+            }
+            cerrarAutorizar();
+            renderRecetario("Auditador");
+        };
+
+        const menuOptions = {
+            "Paciente": [
+                { id: "turnero", icon: "fa-calendar-check", label: "Turnero" },
+                { id: "atencion-virtual", icon: "fa-laptop-medical", label: "Atención Virtual" },
+                { id: "portal", icon: "fa-address-card", label: "Portal Paciente" },
+                { id: "notificaciones", icon: "fa-bell", label: "Notificaciones", notification: true }
+            ],
+            "Médico": [
+                { id: "turnero", icon: "fa-calendar-check", label: "Turnero" },
+                { id: "amie", icon: "fa-robot", label: "AMIE" },
+                { id: "recetario", icon: "fa-prescription", label: "Recetario" }
+            ],
+            "Administrador": [
+                { id: "tablero", icon: "fa-chart-pie", label: "Tablero de Control" },
+                { id: "turnero", icon: "fa-calendar-check", label: "Turnero" },
+                { id: "recetario", icon: "fa-prescription", label: "Recetario" }
+            ],
+            "Auditador": [
+                { id: "recetario", icon: "fa-prescription", label: "Recetario" }
+            ]
+        };
+
+        let currentUser = "Paciente";
+
+        function renderMenu(userType) {
+            const nav = document.getElementById('mainMenu');
+            nav.innerHTML = '';
+            menuOptions[userType].forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `menu-btn font-semibold px-4 py-2 rounded-xl transition-all flex items-center gap-2 text-blue-700 hover:bg-blue-100${idx === 0 ? ' active bg-blue-100' : ''}`;
+                btn.setAttribute('data-section', opt.id);
+                btn.innerHTML = `<i class="fa-solid ${opt.icon}"></i> ${opt.label}`;
+                if (opt.notification) {
+                    btn.classList.add('relative');
+                    btn.innerHTML += `<span class="absolute top-1 right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 font-bold animate-pulse">3</span>`;
+                }
+                btn.addEventListener('click', function () {
+                    showSection(opt.id);
+                });
+                nav.appendChild(btn);
+            });
+        }
+
+        function updateSections(userType) {
+            document.querySelectorAll('.section').forEach(sec => sec.classList.add('hidden'));
+            showSection(menuOptions[userType][0].id);
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(sec => {
+                sec.classList.add('hidden');
+                // No quitamos animaciones internas dinámicamente porque podrían redibujar
+            });
+
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.classList.remove('hidden');
+
+                // Solo se animan secciones NO problemáticas
+                if (!["turnero", "recetario"].includes(sectionId)) {
+                    section.classList.add('animate-slide-up');
+                }
+            }
+
+            document.querySelectorAll('.menu-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-blue-100');
+            });
+            const activeBtn = document.querySelector(`.menu-btn[data-section="${sectionId}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active', 'bg-blue-100');
+            }
+
+            if (sectionId === "turnero") renderTurnero(currentUser);
+            if (sectionId === "recetario") renderRecetario(currentUser);
+            if (sectionId === "portal") renderPortalPaciente();
+            if (sectionId === "amie") {
+                document.getElementById('contenidoMedicoIA').classList.remove('hidden');
+                // Reset chat to initial state
+                limpiarChatAMIE();
+            }
+        }
+
+        function setUser(tipo) {
+            currentUser = tipo;
+            document.getElementById('userType').textContent = tipo;
+            if (tipo === "Médico") medicoActual = "Dr. Pérez";
+            renderMenu(tipo);
+            updateSections(tipo);
+        }
+
+        function renderPortalPaciente() {
+            const turno = turnosSimulados.filter(t => t.paciente === "Juan Pérez").sort((a, b) => a.fecha.localeCompare(b.fecha) || a.hora.localeCompare(b.hora))[0];
+            document.getElementById('proximoTurno').innerHTML = turno
+                ? `<div class="font-semibold text-blue-700">${turno.fecha} - ${turno.hora}</div>`
+                : `<div class="text-gray-500">No hay turnos próximos.</div>`;
+        }
+
+        renderMenu(currentUser);
+        updateSections(currentUser);
+
+        document.getElementById('enviarIa').onclick = function () {
+        const input = document.getElementById('inputIa');
+        const chat = document.getElementById('iaChat');
+        const texto = input.value.trim();
+        if (!texto) return;
+
+        const userMsg = document.createElement('div');
+        userMsg.className = "text-right";
+        userMsg.innerHTML = `<div class="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-xl text-sm mb-1">${texto}</div>`;
+        chat.appendChild(userMsg);
+
+        let respuesta = "Lo siento, ¿podrías repetir eso?";
+        const txt = texto.toLowerCase();
+        if (txt.includes("dolor") || txt.includes("cabeza")) respuesta = "Puede ser cefalea. ¿Desea sugerencia de receta de Paracetamol?";
+        else if (txt.includes("fiebre")) respuesta = "Recomiendo tomar la temperatura y mantenerse hidratado.";
+        else if (txt.includes("receta")) respuesta = "¿Quiere que le genere una receta digital?";
+        else if (txt.includes("gracias")) respuesta = "¡De nada! Estoy aquí para ayudar.";
+        else if (txt.includes("diarrea")) respuesta = "Podría ser una infección gastrointestinal. Le recomiendo consultar con un médico.";
+
+        const iaMsg = document.createElement('div');
+        iaMsg.className = "text-left";
+        iaMsg.innerHTML = `<div class="inline-block bg-blue-200 text-blue-900 px-3 py-1 rounded-xl text-sm mb-1">${respuesta}</div>`;
+        chat.appendChild(iaMsg);
+
+        input.value = "";
+        chat.scrollTop = chat.scrollHeight;
+        };
+
+        // Funcionalidad AMIE
+        function enviarConsultaAMIE() {
+            const input = document.getElementById('amieInput');
+            const chat = document.getElementById('amieChat');
+            const texto = input.value.trim();
+            
+            if (!texto) return;
+            
+            // Agregar mensaje del usuario
+            const userMsg = document.createElement('div');
+            userMsg.className = 'flex justify-end mb-3';
+            userMsg.innerHTML = `
+                <div class="bg-blue-600 text-white p-3 rounded-l-xl rounded-tr-xl max-w-3xl">
+                    <p>${texto}</p>
+                </div>
+            `;
+            chat.appendChild(userMsg);
+            
+            // Limpiar input
+            input.value = '';
+            
+            // Mostrar indicador de escritura
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'flex items-center gap-2 mb-3 text-gray-500 text-sm';
+            typingIndicator.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                    <i class="fa-solid fa-brain text-blue-600"></i>
+                </div>
+                <div class="typing-indicator">
+                    <span></span><span></span><span></span>
+                </div>
+            `;
+            chat.appendChild(typingIndicator);
+            chat.scrollTop = chat.scrollHeight;
+            
+            // Simular respuesta después de un retraso
+            setTimeout(() => {
+                typingIndicator.remove();
+                const respuesta = generarRespuestaAMIE(texto);
+                
+                const botMsg = document.createElement('div');
+                botMsg.className = 'flex mb-3';
+                botMsg.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-blue-100 flex-shrink-0 flex items-center justify-center">
+                        <i class="fa-solid fa-brain text-blue-600"></i>
+                    </div>
+                    <div class="ml-2 bg-gray-100 p-3 rounded-r-xl rounded-bl-xl max-w-3xl">
+                        ${respuesta}
+                        <div class="mt-2 pt-2 border-t border-gray-200 text-xs text-gray-500">
+                            <button onclick="mostrarFuentes()" class="text-blue-600 hover:underline mr-3">
+                                <i class="fa-solid fa-book-open"></i> Ver fuentes
+                            </button>
+                            <button onclick="copiarRespuesta(this)" class="text-blue-600 hover:underline">
+                                <i class="fa-regular fa-copy"></i> Copiar
+                            </button>
+                        </div>
+                    </div>
+                `;
+                chat.appendChild(botMsg);
+                chat.scrollTop = chat.scrollHeight;
+            }, 1500);
+        }
+        
+        function procesarConsultaAMIE(consulta) {
+            const consultaLower = consulta.toLowerCase();
+            
+            // Consultas sobre AMIE
+            if (consultaLower.includes('amie') || 
+                consultaLower.includes('información sobre ti') || 
+                consultaLower.includes('quien eres') || 
+                consultaLower.includes('qué eres') ||
+                consultaLower.includes('más información')) {
+                return `
+                    <div class="space-y-4">
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                            <h3 class="font-bold text-blue-800 text-lg mb-2">🤖 Sobre AMIE</h3>
+                            <p class="mb-3">Soy AMIE (Articulate Medical Intelligence Explorer), un asistente de inteligencia artificial diseñado para apoyar a profesionales de la salud en el razonamiento clínico y diagnóstico.</p>
+                            
+                            <div class="grid md:grid-cols-2 gap-4 mt-4">
+                                <div class="bg-white p-3 rounded-lg shadow-sm">
+                                    <div class="text-blue-600 mb-2">
+                                        <i class="fa-solid fa-brain"></i> <span class="font-semibold">Mis capacidades</span>
+                                    </div>
+                                    <ul class="text-sm space-y-1 list-disc pl-5">
+                                        <li>Asistencia en diagnóstico médico</li>
+                                        <li>Información sobre tratamientos</li>
+                                        <li>Identificación de interacciones medicamentosas</li>
+                                        <li>Orientación basada en evidencia médica</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="bg-white p-3 rounded-lg shadow-sm">
+                                    <div class="text-blue-600 mb-2">
+                                        <i class="fa-solid fa-lightbulb"></i> <span class="font-semibold">¿Cómo me uso?</span>
+                                    </div>
+                                    <ul class="text-sm space-y-1">
+                                        <li>• Haz preguntas médicas específicas</li>
+                                        <li>• Describe síntomas para obtener orientación</li>
+                                        <li>• Consulta sobre medicamentos</li>
+                                        <li>• Pregunta por protocolos de tratamiento</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                                <p class="text-sm text-blue-700">
+                                    <i class="fa-solid fa-circle-info mr-1"></i> 
+                                    <span class="font-medium">Importante:</span> Soy una herramienta de apoyo y no reemplazo el juicio clínico profesional. 
+                                    Las decisiones médicas deben ser tomadas por profesionales calificados.
+                                </p>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <p class="text-sm text-gray-600">Para más detalles técnicos, puedes consultar la 
+                                    <a href="https://research.google/blog/amie-a-research-ai-system-for-diagnostic-medical-reasoning-and-conversations/" 
+                                       target="_blank" 
+                                       class="text-blue-600 hover:underline font-medium">
+                                        investigación original de Google Research
+                                        <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-xs"></i>
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Diagnósticos diferenciales
+            if (consultaLower.includes('diagnóstico') || consultaLower.includes('diagnostico') || 
+                consultaLower.includes('qué puede ser') || consultaLower.includes('que puede ser')) {
+                return `
+                    <p>Basado en los síntomas mencionados, los diagnósticos diferenciales podrían incluir:</p>
+                    <ul class="list-disc pl-5 mt-2 space-y-1">
+                        <li><strong>Migraña</strong> - Dolor de cabeza intenso, náuseas, sensibilidad a la luz/sonido</li>
+                        <li><strong>Infección de vías respiratorias superiores</strong> - Fiebre, congestión, dolor de garganta</li>
+                        <li><strong>Hipertensión arterial</strong> - Dolor de cabeza, visión borrosa, mareos</li>
+                    </ul>
+                    <p class="mt-2 text-sm text-gray-600">Recomiendo realizar una evaluación clínica completa para confirmar el diagnóstico.</p>
+                `;
+            }
+            
+            // Tratamientos
+            if (consultaLower.includes('tratamiento') || consultaLower.includes('cómo tratar') || consultaLower.includes('como tratar')) {
+                return `
+                    <p>Para el manejo de esta condición, se podrían considerar las siguientes opciones de tratamiento:</p>
+                    <div class="mt-2 space-y-3">
+                        <div class="p-2 bg-blue-50 rounded-lg">
+                            <p class="font-medium">📋 Tratamiento farmacológico:</p>
+                            <ul class="list-disc pl-5 text-sm">
+                                <li>Paracetamol 500mg cada 8 horas (máx. 4g/día)</li>
+                                <li>Ibuprofeno 400mg cada 8 horas con alimentos</li>
+                            </ul>
+                        </div>
+                        <div class="p-2 bg-green-50 rounded-lg">
+                            <p class="font-medium">💡 Medidas no farmacológicas:</p>
+                            <ul class="list-disc pl-5 text-sm">
+                                <li>Hidratación adecuada</li>
+                                <li>Reposo en ambiente tranquilo</li>
+                                <li>Compresas frías en la frente</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p class="mt-2 text-xs text-gray-500">Siempre considere las contraindicaciones y comorbilidades del paciente.</p>
+                `;
+            }
+            
+            // Interacciones medicamentosas
+            if (consultaLower.includes('interacción') || consultaLower.includes('interaccion') || 
+                consultaLower.includes('puedo tomar') || consultaLower.includes('mezclar')) {
+                return `
+                    <div class="space-y-3">
+                        <div class="p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded-r">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fa-solid fa-triangle-exclamation text-yellow-500"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-yellow-800">¡Precaución con las interacciones!</p>
+                                    <div class="mt-1 text-sm text-yellow-700">
+                                        <p>Se ha detectado una posible interacción entre los medicamentos mencionados:</p>
+                                        <ul class="list-disc pl-5 mt-1">
+                                            <li><strong>Omeprazol + Clopidogrel</strong>: Disminución del efecto antiagregante plaquetario</li>
+                                            <li><strong>Ibuprofeno + Aspirina</strong>: Aumento del riesgo de efectos gastrointestinales</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-sm">Recomendación: Considerar alternativas como Pantoprazol o ajustar dosis según evaluación clínica.</p>
+                    </div>
+                `;
+            }
+            
+            // Respuesta por defecto
+            return `
+                <p>Gracias por tu consulta. He analizado la información proporcionada y, basado en los datos disponibles, puedo ofrecerte la siguiente orientación:</p>
+                <div class="mt-3 p-3 bg-blue-50 rounded-lg">
+                    <p class="font-medium">📌 Puntos clave a considerar:</p>
+                    <ul class="list-disc pl-5 mt-1 text-sm space-y-1">
+                        <li>Se recomienda una evaluación clínica completa</li>
+                        <li>Considerar realizar estudios complementarios según hallazgos</li>
+                        <li>Monitorear la evolución de los síntomas</li>
+                    </ul>
+                </div>
+                <p class="mt-2 text-sm text-gray-600">¿Te gustaría que profundice en algún aspecto específico de tu consulta?</p>
+            `;
+        }
+        
+        function ejemploConsulta(texto) {
+            document.getElementById('amieInput').value = texto;
+            enviarConsultaAMIE();
+        }
+        
+        function limpiarChatAMIE() {
+            if (confirm('¿Estás seguro de que deseas limpiar la conversación?')) {
+                document.getElementById('amieChat').innerHTML = `
+                    <div class="flex">
+                        <div class="bg-gray-100 p-3 rounded-r-xl rounded-bl-xl max-w-3xl">
+                            <p class="font-medium">Hola, soy AMIE, tu asistente de inteligencia médica. ¿En qué puedo ayudarte hoy?</p>
+                            <p class="text-xs text-gray-500 mt-1">Puedes preguntarme sobre diagnósticos, tratamientos o interacciones medicamentosas.</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        function exportarConsulta() {
+            alert('Función de exportación habilitada en la versión completa de AMIE');
+            // En una implementación real, esto generaría un PDF o documento con el historial de la conversación
+        }
+        
+        function mostrarFuentes() {
+            const mensaje = document.createElement('div');
+            mensaje.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            mensaje.innerHTML = `
+                <div class="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">Fuentes y Referencias</h3>
+                        <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700">
+                            <i class="fa-solid fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="border-b pb-4">
+                            <h4 class="font-semibold text-blue-700 mb-2">Sistema AMIE de Google Research</h4>
+                            <p class="text-sm text-gray-700 mb-2">AMIE (Articulate Medical Intelligence Explorer) es un sistema de IA para razonamiento médico diagnóstico y conversaciones.</p>
+                            <a href="https://research.google/blog/amie-a-research-ai-system-for-diagnostic-medical-reasoning-and-conversations/" 
+                               target="_blank" 
+                               class="text-blue-600 hover:underline text-sm flex items-center">
+                                <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i>
+                                Ver investigación completa
+                            </a>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Otras fuentes médicas</h4>
+                            <p class="text-sm text-gray-600">El sistema también utiliza información de guías clínicas actualizadas y publicaciones médicas indexadas.</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end">
+                        <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(mensaje);
+        }
+        
+        function copiarRespuesta(boton) {
+            const respuesta = boton.closest('.flex').previousElementSibling.textContent;
+            navigator.clipboard.writeText(respuesta)
+                .then(() => {
+                    const originalText = boton.innerHTML;
+                    boton.innerHTML = '<i class="fa-solid fa-check"></i> ¡Copiado!';
+                    setTimeout(() => {
+                        boton.innerHTML = originalText;
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Error al copiar: ', err);
+                });
+        }
+        
+        // Mostrar contenido según el rol del usuario
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof currentUser !== 'undefined') {
+                if (currentUser === 'Paciente') {
+                    document.getElementById('contenidoPacienteIA').classList.remove('hidden');
+                } else if (currentUser === 'Médico') {
+                    document.getElementById('contenidoMedicoIA').classList.remove('hidden');
+                }
+            }
+        });
+
+        </script>
+    </main>
+</body>
+</html>
