@@ -1411,10 +1411,34 @@
         function renderTurnero(userType) {
             const cont = document.getElementById('turneroContenido');
             cont.innerHTML = '';
+            // Añadir estilos para el scroll horizontal
+            const style = document.createElement('style');
+            style.textContent = `
+                .turnero-scroll {
+                    -webkit-overflow-scrolling: touch;
+                    scrollbar-width: thin;
+                }
+                .turnero-scroll::-webkit-scrollbar {
+                    height: 6px;
+                }
+                .turnero-scroll::-webkit-scrollbar-track {
+                    background: #f1f1f1;
+                    border-radius: 10px;
+                }
+                .turnero-scroll::-webkit-scrollbar-thumb {
+                    background: #888;
+                    border-radius: 10px;
+                }
+                .turnero-scroll::-webkit-scrollbar-thumb:hover {
+                    background: #555;
+                }
+            `;
+            document.head.appendChild(style);
             if (userType === "Paciente") {
                 const turnos = turnosSimulados.filter(t => t.paciente === "Juan Pérez");
                 cont.innerHTML = `
-                    <table class="w-full text-left">
+                    <div class="overflow-x-auto turnero-scroll w-full">
+                    <table class="w-full text-left min-w-[600px]">
                     <thead>
                         <tr>
                         <th class="py-2 px-4">Fecha</th>
@@ -1446,8 +1470,8 @@
                 } else {
                     cont.innerHTML = `
                     <div class="mb-4 font-bold text-blue-700">Pacientes a atender hoy (${hoy}):</div>
-                    <div class="overflow-x-auto">
-                    <table class="w-full text-left min-w-[500px] sm:min-w-0">
+                    <div class="overflow-x-auto turnero-scroll w-full">
+                    <table class="w-full text-left min-w-[500px]">
                         <thead>
                         <tr>
                             <th class="py-2 px-4">Hora</th>
@@ -1472,7 +1496,8 @@
                 }
             } else if (userType === "Administrador") {
                 cont.innerHTML = `
-                    <table class="w-full text-left">
+                    <div class="overflow-x-auto turnero-scroll w-full">
+                    <table class="w-full text-left min-w-[600px]">
                     <thead>
                         <tr>
                         <th class="py-2 px-4">Fecha</th>
@@ -1514,7 +1539,8 @@
             if (userType === "Paciente") {
                 const recetas = recetasSimuladas.filter(r => r.paciente === "Juan Pérez");
                 cont.innerHTML = `
-                    <table class="w-full text-left">
+                    <div class="overflow-x-auto turnero-scroll w-full">
+                    <table class="w-full text-left min-w-[600px]">
                     <thead>
                         <tr>
                         <th class="py-2 px-4">Medicamento</th>
@@ -1538,7 +1564,8 @@
                 btnNueva.classList.remove('hidden');
                 recetasMedico = recetasSimuladas.filter(r => r.creador === medicoActual);
                 cont.innerHTML = `
-                    <table class="w-full text-left">
+                    <div class="overflow-x-auto turnero-scroll w-full">
+                    <table class="w-full text-left min-w-[600px]">
                     <thead>
                         <tr>
                         <th class="py-2 px-4">Paciente</th>
@@ -1562,7 +1589,8 @@
                 `;
             } else if (userType === "Administrador") {
                 cont.innerHTML = `
-                    <table class="w-full text-left">
+                    <div class="overflow-x-auto turnero-scroll w-full">
+                    <table class="w-full text-left min-w-[600px]">
                     <thead>
                         <tr>
                         <th class="py-2 px-4">Paciente</th>
@@ -1588,7 +1616,8 @@
                 `;
             } else if (userType === "Auditador") {
                 cont.innerHTML = `
-                    <table class="w-full text-left">
+                    <div class="overflow-x-auto turnero-scroll w-full">
+                    <table class="w-full text-left min-w-[600px]">
                     <thead>
                         <tr>
                         <th class="py-2 px-4">Paciente</th>
