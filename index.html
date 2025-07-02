@@ -51,18 +51,33 @@
                 <small class="opacity-90 text-sm sm:text-base">Demo funcional - Datos simulados</small>
             </div>
         </div>
-        <div class="flex flex-wrap justify-center gap-1 sm:gap-2 bg-white/20 rounded-xl px-2 sm:px-4 py-1 sm:py-2 shadow text-blue-900 font-semibold w-full sm:w-auto">
-            <div class="flex items-center gap-1 sm:gap-2">
+        <!-- Bloque de roles: burbuja actual + selector -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 bg-white/20 rounded-2xl px-3 py-2 shadow text-blue-900 font-medium w-full sm:w-auto">
+
+            <!-- Burbuja de rol actual -->
+            <div class="flex items-center justify-center gap-2 bg-white/30 px-3 py-1.5 rounded-full text-blue-800 font-semibold w-full sm:w-auto">
                 <i class="fa-solid fa-user text-blue-700"></i>
-                <span id="userType" class="text-sm sm:text-base mr-1 sm:mr-2">Paciente</span>
+                <span id="userType" class="text-sm sm:text-base">Paciente</span>
             </div>
-            <div class="flex flex-wrap justify-center gap-1">
-                <button onclick="setUser('Paciente')" class="text-xs sm:text-sm px-1.5 sm:px-2 py-0.5 sm:py-1 rounded hover:bg-blue-100 transition transform hover:scale-105 duration-300">Paciente</button>
-                <button onclick="setUser('Médico')" class="text-xs sm:text-sm px-1.5 sm:px-2 py-0.5 sm:py-1 rounded hover:bg-blue-100 transition transform hover:scale-105 duration-300">Médico</button>
-                <button onclick="setUser('Administrador')" class="text-xs sm:text-sm px-1.5 sm:px-2 py-0.5 sm:py-1 rounded hover:bg-blue-100 transition transform hover:scale-105 duration-300">Admin</button>
-                <button onclick="setUser('Auditador')" class="text-xs sm:text-sm px-1.5 sm:px-2 py-0.5 sm:py-1 rounded hover:bg-blue-100 transition transform hover:scale-105 duration-300">Audit</button>
+
+            <!-- Selector de roles -->
+            <div class="flex flex-wrap justify-center sm:justify-start gap-1 sm:gap-2">
+                <button onclick="setUser('Paciente')" class="text-xs sm:text-sm px-2 py-1 rounded-full hover:bg-blue-100 transition active:scale-95">
+                    Paciente
+                </button>
+                <button onclick="setUser('Médico')" class="text-xs sm:text-sm px-2 py-1 rounded-full hover:bg-blue-100 transition active:scale-95">
+                    Médico
+                </button>
+                <button onclick="setUser('Administrador')" class="text-xs sm:text-sm px-2 py-1 rounded-full hover:bg-blue-100 transition active:scale-95">
+                    Admin
+                </button>
+                <button onclick="setUser('Auditador')" class="text-xs sm:text-sm px-2 py-1 rounded-full hover:bg-blue-100 transition active:scale-95">
+                    Audit
+                </button>
             </div>
+
         </div>
+
     </header>
     <nav id="mainMenu" class="bg-white/80 backdrop-blur-md shadow-lg flex flex-wrap gap-2 sm:gap-4 px-3 sm:px-6 py-2 sm:py-3 sticky top-0 z-10 rounded-b-xl justify-center items-center overflow-x-auto"></nav>
     <main class="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 md:py-8">
