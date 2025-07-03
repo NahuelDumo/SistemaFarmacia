@@ -81,6 +81,234 @@
     </header>
     <nav id="mainMenu" class="bg-white/80 backdrop-blur-md shadow-lg flex flex-wrap gap-2 sm:gap-4 px-3 sm:px-6 py-2 sm:py-3 sticky top-0 z-10 rounded-b-xl justify-center items-center overflow-x-auto"></nav>
     <main class="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 md:py-8">
+        <!-- Sección Mis Recetas -->
+        <section id="mis-recetas" class="section hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-blue-800 flex items-center gap-3">
+                    <i class="fa-solid fa-file-prescription text-blue-500"></i>
+                    Mis Recetas
+                </h2>
+            </div>
+            
+            <!-- Tarjetas de Recetas -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Receta Autorizada -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden border-l-4 border-green-500 hover:shadow-lg transition-shadow duration-300">
+                    <div class="p-5">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-800">Receta #R-2025-001</h3>
+                                <p class="text-sm text-gray-500 mt-1">
+                                    <i class="far fa-calendar-alt mr-1"></i> 02/07/2025
+                                    <span class="mx-2">•</span>
+                                    <i class="far fa-user-md mr-1"></i> Dra. Laura Martínez
+                                </p>
+                            </div>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Autorizada
+                            </span>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <p class="text-sm text-gray-600 mb-2"><i class="fas fa-pills mr-2"></i> 3 medicamentos</p>
+                            <p class="text-sm text-gray-600"><i class="far fa-clock mr-2"></i> Válida hasta: 02/08/2025</p>
+                        </div>
+                        
+                        <div class="mt-5 flex justify-end">
+                            <button onclick="verReceta('auth')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                                <i class="far fa-eye"></i> Ver Receta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Receta Pendiente -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden border-l-4 border-yellow-400 opacity-80">
+                    <div class="p-5">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-600">Receta #R-2025-002</h3>
+                                <p class="text-sm text-gray-400 mt-1">
+                                    <i class="far fa-calendar-alt mr-1"></i> 01/07/2025
+                                    <span class="mx-2">•</span>
+                                    <i class="far fa-user-md mr-1"></i> Dr. Carlos López
+                                </p>
+                            </div>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                Pendiente
+                            </span>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <p class="text-sm text-gray-400 mb-2"><i class="fas fa-pills mr-2"></i> 2 medicamentos</p>
+                            <p class="text-sm text-gray-400"><i class="far fa-clock mr-2"></i> En validación</p>
+                        </div>
+                        
+                        <div class="mt-5 flex justify-end">
+                            <button disabled class="px-4 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed flex items-center gap-2">
+                                <i class="far fa-eye-slash"></i> No disponible
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección Mis Recetas -->
+        <section id="mis-recetas" class="section hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-3xl font-extrabold text-blue-800 flex items-center gap-3">
+                    <i class="fa-solid fa-prescription text-indigo-500"></i>
+                    Mis Recetas
+                </h2>
+            </div>
+            
+            <div class="grid sm:grid-cols-2 gap-6">
+                <!-- Receta autorizada -->
+                <div class="bg-white rounded-xl shadow p-4 border border-green-200">
+                    <h3 class="text-lg font-semibold text-green-700 mb-2">Receta autorizada</h3>
+                    <p class="text-sm text-gray-700 mb-3">Emitida por el Dr. Gómez - 2025-07-02</p>
+                    <span class="inline-block px-2 py-1 text-xs rounded-full bg-green-100 text-green-700 font-medium mb-3">Autorizada</span>
+                    <button onclick="verReceta('auth')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow text-sm">
+                        Ver receta
+                    </button>
+                </div>
+                
+                <!-- Receta no autorizada -->
+                <div class="bg-white rounded-xl shadow p-4 border border-gray-300 opacity-70">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Receta pendiente</h3>
+                    <p class="text-sm text-gray-700 mb-3">Emitida por el Dr. Gómez - 2025-07-01</p>
+                    <span class="inline-block px-2 py-1 text-xs rounded-full bg-gray-200 text-gray-600 font-medium mb-3">No autorizada</span>
+                    <button disabled class="bg-gray-300 text-gray-600 px-4 py-2 rounded-lg text-sm cursor-not-allowed">
+                        Previsualización no disponible
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Modal de Receta -->
+        <div id="modalReceta" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+                <!-- Encabezado -->
+                <div class="sticky top-0 bg-white border-b p-4 flex justify-between items-center z-10">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800">Receta Médica Digital</h3>
+                        <p class="text-sm text-gray-500">Documento válido con firma digital</p>
+                    </div>
+                    <button onclick="cerrarReceta()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                
+                <!-- Contenido de la Receta -->
+                <div class="p-6">
+                    <!-- Encabezado Institucional -->
+                    <div class="text-center mb-6">
+                        <h1 class="text-2xl font-bold text-blue-800">Sistema de Salud Pública</h1>
+                        <p class="text-sm text-gray-600">Ministerio de Salud - Provincia de Buenos Aires</p>
+                        <div class="h-1 bg-blue-100 w-24 mx-auto my-2 rounded-full"></div>
+                    </div>
+
+                    <!-- Datos del Paciente -->
+                    <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+                        <h4 class="font-semibold text-blue-800 mb-2">DATOS DEL PACIENTE</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                            <div><span class="font-medium">Nombre:</span> Juan Pérez</div>
+                            <div><span class="font-medium">DNI:</span> 35.123.456</div>
+                            <div><span class="font-medium">Edad:</span> 35 años</div>
+                            <div><span class="font-medium">Obra Social:</span> IOMA</div>
+                        </div>
+                    </div>
+
+                    <!-- Datos del Profesional -->
+                    <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                        <h4 class="font-semibold text-gray-800 mb-2">DATOS DEL PROFESIONAL</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                            <div><span class="font-medium">Médico:</span> Dra. Laura Martínez</div>
+                            <div><span class="font-medium">MP:</span> 12345/7</div>
+                            <div><span class="font-medium">Especialidad:</span> Clínica Médica</div>
+                            <div><span class="font-medium">Fecha:</span> 02/07/2025</div>
+                        </div>
+                    </div>
+
+                    <!-- Medicación -->
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-gray-800 mb-3 border-b pb-1">MEDICACIÓN RECETADA</h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm">
+                                <thead>
+                                    <tr class="bg-gray-100">
+                                        <th class="text-left p-2">Medicamento</th>
+                                        <th class="text-left p-2">Dosis</th>
+                                        <th class="text-left p-2">Frecuencia</th>
+                                        <th class="text-left p-2">Duración</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b">
+                                        <td class="p-2">Ibuprofeno 600mg</td>
+                                        <td class="p-2">1 comprimido</td>
+                                        <td class="p-2">Cada 8 horas</td>
+                                        <td class="p-2">5 días</td>
+                                    </tr>
+                                    <tr class="border-b">
+                                        <td class="p-2">Amoxicilina 500mg</td>
+                                        <td class="p-2">1 comprimido</td>
+                                        <td class="p-2">Cada 12 horas</td>
+                                        <td class="p-2">7 días</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Indicaciones -->
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-gray-800 mb-2">INDICACIONES</h4>
+                        <ul class="list-disc pl-5 text-sm space-y-1">
+                            <li>Tomar con alimentos para evitar molestias gástricas</li>
+                            <li>No consumir alcohol durante el tratamiento</li>
+                            <li>Ante cualquier reacción adversa, suspender y consultar</li>
+                        </ul>
+                    </div>
+
+                    <!-- Diagnóstico -->
+                    <div class="mb-6 p-4 bg-yellow-50 rounded-lg">
+                        <h4 class="font-semibold text-gray-800 mb-1">DIAGNÓSTICO</h4>
+                        <p class="text-sm">Faringoamigdalitis aguda bacteriana (J03.90)</p>
+                    </div>
+
+                    <!-- Firmas y Validación -->
+                    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="text-center">
+                            <div class="border-t-2 border-gray-300 pt-4 mb-2">
+                                <p class="text-sm font-medium">Firma y sello del profesional</p>
+                                <div class="h-16 mt-2 flex items-center justify-center">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Check_green_circle.svg/768px-Check_green_circle.svg.png" alt="Firma digital" class="h-12 w-12">
+                                </div>
+                                <p class="text-xs text-green-600 mt-1">Firma digital válida</p>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="border-t-2 border-gray-300 pt-4">
+                                <p class="text-sm font-medium">Código de validación</p>
+                                <div class="mt-2 flex justify-center">
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=RECETA-2025-001-123456" alt="Código QR" class="h-24 w-24 border p-1">
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">Código: RECETA-2025-001-123456</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pie de página -->
+                <div class="bg-gray-50 p-4 border-t text-center">
+                    <p class="text-xs text-gray-500">Este documento es válido por 30 días a partir de la fecha de emisión</p>
+                    <p class="text-xs text-gray-400 mt-1">Documento generado el 02/07/2025 14:30 - Válido hasta 01/08/2025</p>
+                </div>
+            </div>
+        </div>
+  
         <!-- Turnero -->
         <section id="turnero" class="section hidden">
             <div class="flex items-center justify-between mb-6">
@@ -460,7 +688,7 @@
             <div id="contenidoPacienteIA" class="hidden">
                 <div class="bg-white rounded-xl shadow-lg overflow-hidden max-w-4xl mx-2 sm:mx-4 md:mx-auto">
                     <!-- Encabezado -->
-                    <div class="bg-gradient-to-r from-blue-600 to-blue-800 p-4 sm:p-6 text-white">
+                    <div class="bg-gradient-to-r from-blue-600 to-blue-800 p-4 text-white flex items-center justify-between">
                         <h3 class="text-xl sm:text-2xl font-bold flex items-center gap-2 sm:gap-3">
                             <i class="fa-solid fa-stethoscope text-lg sm:text-xl"></i>
                             <span class="text-lg sm:text-2xl">Consulta Médica Virtual</span>
@@ -1486,6 +1714,161 @@
             });
             </script>
         </section>
+        <!-- Modal de previsualización de receta -->
+        <div id="modalReceta" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl animate-fade-in max-h-[90vh] overflow-y-auto">
+                <!-- Encabezado -->
+                <div class="border-b p-4 flex justify-between items-center sticky top-0 bg-white z-10">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800">Receta Médica</h3>
+                        <p class="text-sm text-gray-500">Documento oficial - Solo para uso médico</p>
+                    </div>
+                    <button onclick="cerrarReceta()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <!-- Contenido de la Receta -->
+                <div class="p-6">
+                    <!-- Encabezado Institucional -->
+                    <div class="text-center mb-6">
+                        <div class="flex justify-center mb-2">
+                            <div class="bg-blue-100 p-3 rounded-full">
+                                <i class="fas fa-heartbeat text-3xl text-blue-600"></i>
+                            </div>
+                        </div>
+                        <h2 class="text-2xl font-bold text-blue-800">Sistema Nacional de Salud</h2>
+                        <p class="text-gray-600">Ministerio de Salud Pública</p>
+                        <p class="text-sm text-gray-500 mt-1">Resolución 1234/2025 - RNEMP 98765432</p>
+                    </div>
+                    
+                    <!-- Datos de la Receta -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">Paciente</h4>
+                            <p class="text-lg font-semibold">Juan Carlos Pérez</p>
+                            <p class="text-gray-600">DNI: 34.567.890</p>
+                            <p class="text-gray-600">Obra Social: IOMA</p>
+                            <p class="text-gray-600">N° Afiliado: 12345678901</p>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">Profesional</h4>
+                            <p class="text-lg font-semibold">Dra. Laura Martínez</p>
+                            <p class="text-gray-600">MP: 123456</p>
+                            <p class="text-gray-600">MN: 98765</p>
+                            <p class="text-gray-600">Especialista en Clínica Médica</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Medicamentos -->
+                    <div class="mb-6">
+                        <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Medicación Recetada</h4>
+                        <div class="space-y-4">
+                            <!-- Medicamento 1 -->
+                            <div class="border-l-4 border-blue-500 pl-4 py-2 bg-blue-50 rounded-r">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Ibuprofeno 600mg</p>
+                                        <p class="text-sm text-gray-600">Comprimidos recubiertos</p>
+                                    </div>
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">Cód: 789654</span>
+                                </div>
+                                <div class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+                                    <div><span class="font-medium">Dosis:</span> 1 comprimido</div>
+                                    <div><span class="font-medium">Frecuencia:</span> Cada 8 horas</div>
+                                    <div><span class="font-medium">Duración:</span> 5 días</div>
+                                    <div><span class="font-medium">Vía:</span> Oral</div>
+                                    <div class="md:col-span-2"><span class="font-medium">Indicaciones:</span> Tomar con las comidas</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Medicamento 2 -->
+                            <div class="border-l-4 border-blue-500 pl-4 py-2 bg-blue-50 rounded-r">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Amoxicilina 500mg</p>
+                                        <p class="text-sm text-gray-600">Cápsulas</p>
+                                    </div>
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">Cód: 123456</span>
+                                </div>
+                                <div class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+                                    <div><span class="font-medium">Dosis:</span> 1 cápsula</div>
+                                    <div><span class="font-medium">Frecuencia:</span> Cada 12 horas</div>
+                                    <div><span class="font-medium">Duración:</span> 7 días</div>
+                                    <div><span class="font-medium">Vía:</span> Oral</div>
+                                    <div class="md:col-span-2"><span class="font-medium">Indicaciones:</span> Comenzar el tratamiento completo</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Diagnóstico y Observaciones -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">Diagnóstico</h4>
+                            <p class="text-gray-800 bg-gray-50 p-3 rounded-lg">Faringoamigdalitis aguda bacteriana (J03.90)</p>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">Observaciones</h4>
+                            <p class="text-gray-800 bg-blue-50 p-3 rounded-lg">Reposo relativo por 48 horas. Control si persiste la fiebre después de 48 horas de tratamiento.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Firmas y Validación -->
+                    <div class="border-t border-gray-200 pt-4 mt-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="text-center">
+                                <div class="h-16 border-b border-gray-300 mb-2"></div>
+                                <p class="text-xs text-gray-500">Firma y sello del profesional</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="h-16 border-b border-gray-300 mb-2"></div>
+                                <p class="text-xs text-gray-500">Firma del paciente o familiar</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="h-16 flex items-center justify-center">
+                                    <div class="bg-gray-100 p-2 rounded">
+                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=RECETA-2025-001-JUAN-PEREZ" alt="Código QR" class="h-12 w-12">
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-500">Código de validación</p>
+                                <p class="text-xs font-mono text-gray-700">R-${Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 text-center">
+                            <p class="text-xs text-gray-500">
+                                <i class="fas fa-shield-alt text-green-500 mr-1"></i>
+                                Documento válido y firmado digitalmente
+                                <span class="text-green-600 font-medium">
+                                    <i class="fas fa-check-circle ml-1"></i> Verificado
+                                </span>
+                            </p>
+                            <p class="text-xs text-gray-400 mt-1">
+                                Emitido el 02/07/2025 14:30 - Válido hasta 02/08/2025
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pie del Modal -->
+                <div class="bg-gray-50 px-6 py-3 border-t flex flex-col sm:flex-row justify-between items-center gap-3">
+                    <div class="text-xs text-gray-500 text-center sm:text-left">
+                        <i class="fas fa-lock text-green-500 mr-1"></i>
+                        Documento seguro - No válido para uso sin firma digital
+                    </div>
+                    <div class="flex gap-2 flex-wrap justify-center">
+                        <button class="px-4 py-2 border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50 flex items-center gap-2">
+                            <i class="fas fa-print"></i> Imprimir
+                        </button>
+                        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+                            <i class="fas fa-download"></i> Descargar PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+  
         <script>
         // --- Datos simulados ---
         const turnosSimulados = [
@@ -1546,29 +1929,38 @@
             if (userType === "Paciente") {
                 const turnos = turnosSimulados.filter(t => t.paciente === "Juan Pérez");
                 cont.innerHTML = `
+                    <div class="mb-6 flex justify-end">
+                        <button onclick="solicitarNuevoTurno()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors">
+                            <i class="fa-solid fa-calendar-plus"></i> Realizar nuevo turno
+                        </button>
+                    </div>
                     <div class="overflow-x-auto turnero-scroll w-full">
-                    <table class="w-full text-left min-w-[600px]">
-                    <thead>
-                        <tr>
-                        <th class="py-2 px-4">Fecha</th>
-                        <th class="py-2 px-4">Hora</th>
-                        <th class="py-2 px-4">Profesional</th>
-                        <th class="py-2 px-4">Especialidad</th>
-                        <th class="py-2 px-4">Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${turnos.map(t => `
-                        <tr>
-                            <td class="py-2 px-4">${t.fecha}</td>
-                            <td class="py-2 px-4">${t.hora}</td>
-                            <td class="py-2 px-4">${t.profesional}</td>
-                            <td class="py-2 px-4">${t.especialidad}</td>
-                            <td class="py-2 px-4"><span class="bg-${t.estado === "Confirmado" ? "green" : "yellow"}-100 text-${t.estado === "Confirmado" ? "green" : "yellow"}-700 px-2 py-1 rounded">${t.estado}</span></td>
-                        </tr>
-                        `).join('')}
-                    </tbody>
-                    </table>
+                        <table class="w-full text-left min-w-[600px]">
+                            <thead>
+                                <tr>
+                                    <th class="py-2 px-4">Fecha</th>
+                                    <th class="py-2 px-4">Hora</th>
+                                    <th class="py-2 px-4">Profesional</th>
+                                    <th class="py-2 px-4">Especialidad</th>
+                                    <th class="py-2 px-4">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${turnos.map(t => `
+                                <tr class="hover:bg-gray-50">
+                                    <td class="py-3 px-4 border-b">${t.fecha}</td>
+                                    <td class="py-3 px-4 border-b">${t.hora}</td>
+                                    <td class="py-3 px-4 border-b">${t.profesional}</td>
+                                    <td class="py-3 px-4 border-b">${t.especialidad}</td>
+                                    <td class="py-3 px-4 border-b">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${t.estado === "Confirmado" ? "green" : "yellow"}-100 text-${t.estado === "Confirmado" ? "green" : "yellow"}-800">
+                                            ${t.estado}
+                                        </span>
+                                    </td>
+                                </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
                     </div>
                 `;
             } else if (userType === "Médico") {
@@ -1640,123 +2032,6 @@
             }
         }
 
-        function renderRecetario(userType) {
-            const cont = document.getElementById('recetarioContenido');
-            const btnNueva = document.getElementById('btnNuevaReceta');
-            cont.innerHTML = '';
-            btnNueva.classList.add('hidden');
-            if (userType === "Paciente") {
-                const recetas = recetasSimuladas.filter(r => r.paciente === "Juan Pérez");
-                cont.innerHTML = `
-                    <div class="overflow-x-auto turnero-scroll w-full">
-                    <table class="w-full text-left min-w-[600px]">
-                    <thead>
-                        <tr>
-                        <th class="py-2 px-4">Medicamento</th>
-                        <th class="py-2 px-4">Estado</th>
-                        <th class="py-2 px-4">Descuento</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${recetas.map(r => `
-                        <tr>
-                            <td class="py-2 px-4">${r.medicamento}</td>
-                            <td class="py-2 px-4"><span class="bg-${r.estado === "Entregado" ? "green" : "yellow"}-100 text-${r.estado === "Entregado" ? "green" : "yellow"}-700 px-2 py-1 rounded">${r.estado}</span></td>
-                            <td class="py-2 px-4">${r.descuento}%</td>
-                        </tr>
-                        `).join('')}
-                    </tbody>
-                    </table>
-                    </div>
-                `;
-            } else if (userType === "Médico") {
-                btnNueva.classList.remove('hidden');
-                recetasMedico = recetasSimuladas.filter(r => r.creador === medicoActual);
-                cont.innerHTML = `
-                    <div class="overflow-x-auto turnero-scroll w-full">
-                    <table class="w-full text-left min-w-[600px]">
-                    <thead>
-                        <tr>
-                        <th class="py-2 px-4">Paciente</th>
-                        <th class="py-2 px-4">Medicamento</th>
-                        <th class="py-2 px-4">Estado</th>
-                        <th class="py-2 px-4">Descuento</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${recetasMedico.map(r => `
-                        <tr>
-                            <td class="py-2 px-4">${r.paciente}</td>
-                            <td class="py-2 px-4">${r.medicamento}</td>
-                            <td class="py-2 px-4"><span class="bg-${r.estado === "Entregado" ? "green" : "yellow"}-100 text-${r.estado === "Entregado" ? "green" : "yellow"}-700 px-2 py-1 rounded">${r.estado}</span></td>
-                            <td class="py-2 px-4">${r.descuento}%</td>
-                        </tr>
-                        `).join('')}
-                    </tbody>
-                    </table>
-                    </div>
-                `;
-            } else if (userType === "Administrador") {
-                cont.innerHTML = `
-                    <div class="overflow-x-auto turnero-scroll w-full">
-                    <table class="w-full text-left min-w-[600px]">
-                    <thead>
-                        <tr>
-                        <th class="py-2 px-4">Paciente</th>
-                        <th class="py-2 px-4">Medicamento</th>
-                        <th class="py-2 px-4">Estado</th>
-                        <th class="py-2 px-4">Descuento</th>
-                        <th class="py-2 px-4">Creador</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${recetasSimuladas.map(r => `
-                        <tr>
-                            <td class="py-2 px-4">${r.paciente}</td>
-                            <td class="py-2 px-4">${r.medicamento}</td>
-                            <td class="py-2 px-4"><span class="bg-${r.estado === "Entregado" ? "green" : "yellow"}-100 text-${r.estado === "Entregado" ? "green" : "yellow"}-700 px-2 py-1 rounded">${r.estado}</span></td>
-                            <td class="py-2 px-4">${r.descuento}%</td>
-                            <td class="py-2 px-4">${r.creador}</td>
-                        </tr>
-                        `).join('')}
-                    </tbody>
-                    </table>
-                    </div>
-                `;
-            } else if (userType === "Auditador") {
-                cont.innerHTML = `
-                    <div class="overflow-x-auto turnero-scroll w-full">
-                    <table class="w-full text-left min-w-[600px]">
-                    <thead>
-                        <tr>
-                        <th class="py-2 px-4">Paciente</th>
-                        <th class="py-2 px-4">Medicamento</th>
-                        <th class="py-2 px-4">Descuento</th>
-                        <th class="py-2 px-4">Creador</th>
-                        <th class="py-2 px-4">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${recetasSimuladas.map((r, idx) => r.estado === "Pendiente" ? `
-                        <tr>
-                            <td class="py-2 px-4">${r.paciente}</td>
-                            <td class="py-2 px-4">${r.medicamento}</td>
-                            <td class="py-2 px-4">${r.descuento}%</td>
-                            <td class="py-2 px-4">${r.creador}</td>
-                            <td class="py-2 px-4">
-                                <button onclick="abrirAutorizar(${idx})" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs flex items-center gap-1">
-                                    <i class="fa-solid fa-check"></i> Autorizar
-                                </button>
-                            </td>
-                        </tr>
-                        ` : '').join('')}
-                    </tbody>
-                    </table>
-                    </div>
-                `;
-            }
-        }
-
         function eliminarTurno(idx) {
             if (confirm("¿Está seguro de eliminar este turno?")) {
                 turnosSimulados.splice(idx, 1);
@@ -1818,6 +2093,7 @@
 
         const menuOptions = {
             "Paciente": [
+                { id: "mis-recetas", icon: "fa-file-prescription", label: "Mis Recetas" },
                 { id: "turnero", icon: "fa-calendar-check", label: "Turnero" },
                 { id: "atencion-virtual", icon: "fa-laptop-medical", label: "Atención Virtual" },
                 { id: "portal", icon: "fa-address-card", label: "Portal Paciente" },
@@ -1892,7 +2168,9 @@
             if (sectionId === "recetario") renderRecetario(currentUser);
             if (sectionId === "portal") renderPortalPaciente();
             if (sectionId === "amie") {
+                // Mostrar solo el contenido de AMIE para médicos y ocultar Atención Virtual
                 document.getElementById('contenidoMedicoIA').classList.remove('hidden');
+                document.getElementById('contenidoPacienteIA').classList.add('hidden');
                 // Reset chat to initial state
                 limpiarChatAMIE();
             }
@@ -1969,7 +2247,7 @@
             const typingIndicator = document.createElement('div');
             typingIndicator.className = 'flex items-center gap-2 mb-3 text-gray-500 text-sm';
             typingIndicator.innerHTML = `
-                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                <div class="w-8 h-8 rounded-full bg-blue-100 flex-shrink-0 flex items-center justify-center">
                     <i class="fa-solid fa-brain text-blue-600"></i>
                 </div>
                 <div class="typing-indicator">
@@ -2183,7 +2461,7 @@
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-xl font-bold text-gray-800">Fuentes y Referencias</h3>
                         <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700">
-                            <i class="fa-solid fa-times text-xl"></i>
+                            <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
                     <div class="space-y-4">
@@ -2243,7 +2521,216 @@
             inicio.classList.add('opacity-0');
             setTimeout(() => inicio.remove(), 700); // espera animación antes de remover
         }
+        }
+        // Funciones para el modal de receta
+        function renderPortalPaciente() {
+    // Aquí iría la lógica para renderizar el portal del paciente
+    console.log('Renderizando portal del paciente...');
+    document.getElementById('contenidoPacienteIA').classList.remove('hidden');
+    document.getElementById('contenidoMedicoIA').classList.add('hidden');
+}
+
+function renderRecetario() {
+    const recetarioContenido = document.getElementById('recetarioContenido');
+    if (!recetarioContenido) return;
+
+    // Datos de ejemplo para recetas
+    const recetas = [
+        {
+            id: 1,
+            paciente: 'Juan Pérez',
+            medico: currentUser === 'Médico' ? 'Dr. ' + currentUser : 'Dra. Ana García',
+            fecha: '2023-07-02',
+            estado: 'Pendiente',
+            medicamentos: [
+                { nombre: 'Ibuprofeno 400mg', dosis: '1 comprimido cada 8 horas', duracion: '5 días' },
+                { nombre: 'Amoxicilina 500mg', dosis: '1 cápsula cada 12 horas', duracion: '7 días' }
+            ]
+        },
+        {
+            id: 2,
+            paciente: 'María López',
+            medico: currentUser === 'Médico' ? 'Dr. ' + currentUser : 'Dr. Carlos Ruiz',
+            fecha: '2023-07-01',
+            estado: 'Autorizada',
+            medicamentos: [
+                { nombre: 'Paracetamol 1g', dosis: '1 comprimido cada 8 horas', duracion: '3 días' }
+            ]
+        }
+    ];
+
+    // Filtrar recetas según el rol
+    let recetasFiltradas = [...recetas];
+    if (currentUser === 'Médico') {
+        // Mostrar solo las recetas creadas por el médico actual
+        recetasFiltradas = recetas.filter(receta => receta.medico === 'Dr. ' + currentUser);
     }
+
+    let html = '';
+
+    // Botón de nueva receta solo para médicos
+    if (currentUser === 'Médico') {
+        html += `
+            <div class="mb-6 flex justify-end">
+                <button onclick="nuevaReceta()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Nueva Receta
+                </button>
+            </div>
+        `;
+    }
+
+    html += `
+        <div class="bg-white rounded-xl shadow-md overflow-hidden mb-6">
+            <div class="p-4 border-b">
+                <h3 class="text-lg font-bold text-gray-800">
+                    ${currentUser === 'Auditador' ? 'Recetas Pendientes de Autorización' : 'Mis Recetas'}
+                </h3>
+            </div>
+            <div class="divide-y">
+    `;
+
+    if (recetasFiltradas.length === 0) {
+        html += `
+            <div class="p-8 text-center text-gray-500">
+                <i class="fa-solid fa-file-prescription text-4xl mb-2 text-gray-300"></i>
+                <p>No hay recetas para mostrar</p>
+            </div>
+        `;
+    } else {
+        recetasFiltradas.forEach((receta, index) => {
+            const medicamentosHtml = receta.medicamentos.map(med => 
+                `<div class="ml-4 text-sm text-gray-600">• ${med.nombre} - ${med.dosis} (${med.duracion})</div>`
+            ).join('');
+
+            html += `
+                <div class="p-4 hover:bg-gray-50">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold text-gray-800">${receta.paciente}</h4>
+                            <p class="text-sm text-gray-600">Médico: ${receta.medico}</p>
+                            <p class="text-xs text-gray-500">${receta.fecha}</p>
+                            ${medicamentosHtml}
+                        </div>
+                        <div class="flex gap-2">
+                            ${currentUser === 'Auditador' && receta.estado === 'Pendiente' ? 
+                                `<button onclick="abrirAutorizar(${index})" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition">
+                                    Autorizar
+                                </button>` : 
+                                `<span class="px-3 py-1 ${receta.estado === 'Autorizada' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'} text-sm rounded">
+                                    ${receta.estado}
+                                </span>`
+                            }
+                            <button onclick="verReceta('${receta.estado.toLowerCase()}')" class="px-3 py-1 border border-gray-300 text-gray-700 text-sm rounded hover:bg-gray-50 transition">
+                                Ver
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    html += `
+            </div>
+        </div>
+    `;
+
+    recetarioContenido.innerHTML = html;
+}
+
+// Función para crear nueva receta (solo para médicos)
+function nuevaReceta() {
+    // Aquí iría la lógica para abrir el formulario de nueva receta
+    alert('Función para crear nueva receta');
+    // Ejemplo de cómo podría implementarse:
+    // document.getElementById('modalNuevaReceta').classList.remove('hidden');
+}
+        
+        function verReceta(tipo) {
+            if (tipo === 'auth') {
+                document.getElementById('modalReceta').classList.remove('hidden');
+                document.getElementById('modalReceta').classList.add('flex');
+                document.body.classList.add('overflow-hidden');
+            }
+        }
+        
+        function cerrarReceta() {
+            document.getElementById('modalReceta').classList.add('hidden');
+            document.getElementById('modalReceta').classList.remove('flex');
+            document.body.classList.remove('overflow-hidden');
+        }
+        
+        // Función para manejar la solicitud de nuevo turno
+        function solicitarNuevoTurno() {
+            // Aquí podrías abrir un modal con un formulario para solicitar un nuevo turno
+            // Por ahora, mostramos un modal simple con un mensaje
+            Swal.fire({
+                title: 'Solicitar nuevo turno',
+                html: `
+                    <div class="text-left space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Especialidad</label>
+                            <select class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">Seleccione una especialidad</option>
+                                <option value="cardiologia">Cardiología</option>
+                                <option value="clinica">Clínica Médica</option>
+                                <option value="pediatria">Pediatría</option>
+                                <option value="traumatologia">Traumatología</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Preferencia de fecha</label>
+                            <input type="date" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" min="${new Date().toISOString().split('T')[0]}">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Motivo de la consulta</label>
+                            <textarea rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Describa brevemente el motivo de su consulta"></textarea>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Solicitar turno',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#6b7280',
+                focusConfirm: false,
+                preConfirm: () => {
+                    // Aquí iría la lógica para procesar la solicitud
+                    return {
+                        success: true,
+                        message: 'Su solicitud de turno ha sido enviada. Nos comunicaremos a la brevedad para confirmar la fecha y hora.'
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire(
+                        '¡Solicitud enviada!',
+                        'Su solicitud de turno ha sido registrada. Nos comunicaremos con usted a la brevedad para confirmar la fecha y hora.',
+                        'success'
+                    );
+                }
+            });
+        }
+
+        // Cerrar al hacer clic fuera del contenido
+        document.getElementById('modalReceta')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                cerrarReceta();
+            }
+        });
+        
+        // Animación de entrada
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .animate-fade-in {
+                animation: fadeIn 0.3s ease-out forwards;
+            }
+        `;
+        document.head.appendChild(style);
         </script>
     </main>
 </body>
